@@ -578,10 +578,11 @@
       <div id="esteticista-mis-comisiones" class="tab-content">
         <div class="dash-header">
           <div><p class="dash-label">✦ Mis ganancias</p><h1 class="dash-title">Mis Comisiones</h1></div>
+          <button class="btn-primary-dash" onclick="abrirModalComision()">+ Nueva comisión</button>
         </div>
         <div class="tabla-wrap">
           <table class="dash-table">
-            <thead><tr><th>Período</th><th>Servicios</th><th>Productos</th><th>Total Comisión</th><th>Total a Pagar</th><th>Estado</th></tr></thead>
+            <thead><tr><th>Período</th><th>Servicios</th><th>Productos</th><th>Total Comisión</th><th>Total a Pagar</th><th>Estado</th><th>Acciones</th></tr></thead>
             <tbody id="tbody-mis-comisiones"></tbody>
           </table>
         </div>
@@ -989,7 +990,7 @@
       <p class="form-section-title" style="margin-top:.5rem">Servicios realizados</p>
       <div class="tabla-wrap" style="margin-bottom:.75rem">
         <table class="dash-table" id="tabla-com-servicios">
-          <thead><tr><th>Fecha</th><th>Cliente</th><th>Servicio</th><th>Valor ($)</th><th>% Comisión</th><th>Comisión ($)</th><th></th></tr></thead>
+          <thead><tr id="thead-com-servicios-row"><th>Fecha</th><th>Cliente</th><th>Servicio</th><th>Valor ($)</th><th>% Comisión</th><th>Comisión ($)</th><th></th></tr></thead>
           <tbody id="tbody-com-servicios"></tbody>
         </table>
       </div>
@@ -998,13 +999,13 @@
       <p class="form-section-title" style="margin-top:1rem">Productos vendidos <span style="font-size:.72rem;font-weight:400;color:var(--text-soft)">(opcional)</span></p>
       <div class="tabla-wrap" style="margin-bottom:.75rem">
         <table class="dash-table" id="tabla-com-productos">
-          <thead><tr><th>Producto</th><th>Cant.</th><th>Precio unit. ($)</th><th>% Comisión</th><th>Comisión ($)</th><th></th></tr></thead>
+          <thead><tr id="thead-com-productos-row"><th>Producto</th><th>Cant.</th><th>Precio unit. ($)</th><th>% Comisión</th><th>Comisión ($)</th><th></th></tr></thead>
           <tbody id="tbody-com-productos"></tbody>
         </table>
       </div>
       <button class="btn-add-row" onclick="addFilaProductoComision()">+ Agregar producto</button>
 
-      <div class="com-resumen-box" style="margin-top:1.25rem">
+      <div id="com-resumen-box" class="com-resumen-box" style="margin-top:1.25rem">
         <p class="form-section-title">Resumen de comisiones</p>
         <div class="com-resumen-grid">
           <div class="com-resumen-item"><span>Total por servicios</span><strong id="com-res-servicios">$0</strong></div>
@@ -1016,28 +1017,32 @@
         </div>
       </div>
 
-      <p class="form-section-title" style="margin-top:1rem">Control de pago</p>
-      <div class="com-grid-2">
-        <div class="form-group">
-          <label>Estado</label>
-          <select id="com-estado">
-            <option value="pendiente">Pendiente</option>
-            <option value="pagado">Pagado</option>
-          </select>
+      <div id="com-control-pago">
+        <p class="form-section-title" style="margin-top:1rem">Control de pago</p>
+        <div class="com-grid-2">
+          <div class="form-group">
+            <label>Estado</label>
+            <select id="com-estado">
+              <option value="pendiente">Pendiente</option>
+              <option value="pagado">Pagado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Método de pago</label>
+            <select id="com-metodo">
+              <option value="">-- Selecciona --</option>
+              <option value="efectivo">Efectivo</option>
+              <option value="transferencia">Transferencia</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Método de pago</label>
-          <select id="com-metodo">
-            <option value="">-- Selecciona --</option>
-            <option value="efectivo">Efectivo</option>
-            <option value="transferencia">Transferencia</option>
-            <option value="otro">Otro</option>
-          </select>
-        </div>
-      </div>
-      <div class="com-grid-2">
         <div class="form-group"><label>Fecha de pago</label><input type="date" id="com-fecha-pago"></div>
-        <div class="form-group"><label>Observaciones</label><input type="text" id="com-observaciones" placeholder="Notas adicionales..."></div>
+      </div>
+
+      <div class="form-group" style="margin-top:.75rem">
+        <label>Observaciones</label>
+        <input type="text" id="com-observaciones" placeholder="Notas adicionales...">
       </div>
 
       <div class="modal-footer">

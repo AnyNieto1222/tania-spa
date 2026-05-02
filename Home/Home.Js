@@ -1643,16 +1643,27 @@ let filasProductosComision = [];
 function renderSelectEsteticistasComision() {
   const sel = document.getElementById('com-esteticista');
   if (!sel) return;
+  // Combina personal de la BD + usuarios del localStorage para no quedar vacío
+  const deDB    = state.personal.map(p => p.nombre);
+  const deLocal = obtenerUsuariosApp()
+    .filter(u => u.rol !== 'administradora')
+    .map(u => u.nombre);
+  const nombres = [...new Set([...deDB, ...deLocal])].filter(Boolean);
   sel.innerHTML = '<option value="">-- Selecciona --</option>' +
-    state.personal.map(p => `<option value="${p.nombre}">${p.nombre} — ${p.cargo}</option>`).join('');
+    nombres.map(n => `<option value="${n}">${n}</option>`).join('');
 }
 
 function abrirModalComision(id = null) {
-  const editing = id !== null;
+  const editing   = id !== null;
+  const esGerente = state.sesionActual?.rol === 'gerente' || state.sesionActual?.rol === 'administradora';
+
   document.getElementById('modal-comision-titulo').textContent = editing ? 'Editar Comisión' : 'Nueva Comisión';
   document.getElementById('com-id').value = id || '';
   filasServiciosComision = [];
   filasProductosComision = [];
+
+  // Poblar selector siempre (para gerente y esteticista)
+  renderSelectEsteticistasComision();
 
   if (editing) {
     const com = state.comisiones.find(c => c.id === id);
@@ -1668,7 +1679,7 @@ function abrirModalComision(id = null) {
     filasServiciosComision = (com.servicios || []).map(s => ({ ...s }));
     filasProductosComision = (com.productos || []).map(p => ({ ...p }));
   } else {
-    document.getElementById('com-esteticista').value = '';
+    document.getElementById('com-esteticista').value = esGerente ? '' : (state.sesionActual?.nombre || '');
     document.getElementById('com-periodo').value = new Date().toISOString().slice(0, 7);
     document.getElementById('com-bonificaciones').value = 0;
     document.getElementById('com-descuentos').value = 0;
@@ -1677,6 +1688,38 @@ function abrirModalComision(id = null) {
     document.getElementById('com-fecha-pago').value = '';
     document.getElementById('com-observaciones').value = '';
   }
+
+  // ── Selector esteticista ──────────────────────────────────
+  const sel = document.getElementById('com-esteticista');
+  if (!esGerente) {
+    const nombreProp = state.sesionActual?.nombre || '';
+    if (nombreProp && !sel.querySelector(`option[value="${nombreProp}"]`)) {
+      const opt = document.createElement('option');
+      opt.value = opt.textContent = nombreProp;
+      sel.appendChild(opt);
+    }
+    sel.value    = nombreProp;
+    sel.disabled = true;
+  } else {
+    sel.disabled = false;
+  }
+
+  // ── Encabezados de tabla según rol ───────────────────────
+  const thServ = document.getElementById('thead-com-servicios-row');
+  const thProd = document.getElementById('thead-com-productos-row');
+  if (thServ) thServ.innerHTML = esGerente
+    ? '<th>Fecha</th><th>Cliente</th><th>Servicio</th><th>Valor ($)</th><th>% Comisión</th><th>Comisión ($)</th><th></th>'
+    : '<th>Fecha</th><th>Cliente</th><th>Servicio</th><th></th>';
+  if (thProd) thProd.innerHTML = esGerente
+    ? '<th>Producto</th><th>Cant.</th><th>Precio unit. ($)</th><th>% Comisión</th><th>Comisión ($)</th><th></th>'
+    : '<th>Producto</th><th>Cant.</th><th></th>';
+
+  // ── Resumen y control de pago: solo gerente ───────────────
+  const resumen  = document.getElementById('com-resumen-box');
+  const ctrlPago = document.getElementById('com-control-pago');
+  if (resumen)  resumen.style.display  = esGerente ? '' : 'none';
+  if (ctrlPago) ctrlPago.style.display = esGerente ? '' : 'none';
+
   renderFilasServiciosComision();
   renderFilasProductosComision();
   recalcularComision();
@@ -1694,32 +1737,38 @@ function addFilaProductoComision() {
 }
 
 function renderFilasServiciosComision() {
+  const esGerente = state.sesionActual?.rol === 'gerente' || state.sesionActual?.rol === 'administradora';
   const tbody = document.getElementById('tbody-com-servicios');
   if (!tbody) return;
+  const cols = esGerente ? 7 : 4;
   tbody.innerHTML = filasServiciosComision.map((f, i) => `
     <tr>
       <td><input type="date" class="td-input" value="${f.fecha}" onchange="updateFilaServicio(${i},'fecha',this.value)"></td>
       <td><input type="text" class="td-input" value="${f.cliente}" placeholder="Cliente" onchange="updateFilaServicio(${i},'cliente',this.value)"></td>
       <td><input type="text" class="td-input" value="${f.servicio}" placeholder="Servicio" onchange="updateFilaServicio(${i},'servicio',this.value)" oninput="autoValorServicio(${i},this.value)"></td>
+      ${esGerente ? `
       <td><input type="number" class="td-input td-num" min="0" value="${f.valor}" onchange="updateFilaServicio(${i},'valor',+this.value)"></td>
       <td><input type="number" class="td-input td-num" min="0" max="100" value="${f.pct}" onchange="updateFilaServicio(${i},'pct',+this.value)"></td>
-      <td class="td-comision">${formatCOP(f.comision)}</td>
+      <td class="td-comision">${formatCOP(f.comision)}</td>` : ''}
       <td><button class="btn-accion btn-cancelar" onclick="eliminarFilaServicio(${i})" title="Eliminar">✕</button></td>
-    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text-soft);padding:1rem;font-size:.8rem">Sin servicios aún</td></tr>';
+    </tr>`).join('') || `<tr><td colspan="${cols}" style="text-align:center;color:var(--text-soft);padding:1rem;font-size:.8rem">Sin servicios aún — pulsa "+ Agregar servicio"</td></tr>`;
 }
 
 function renderFilasProductosComision() {
+  const esGerente = state.sesionActual?.rol === 'gerente' || state.sesionActual?.rol === 'administradora';
   const tbody = document.getElementById('tbody-com-productos');
   if (!tbody) return;
+  const cols = esGerente ? 6 : 3;
   tbody.innerHTML = filasProductosComision.map((f, i) => `
     <tr>
       <td><input type="text" class="td-input" value="${f.producto}" placeholder="Producto" onchange="updateFilaProducto(${i},'producto',this.value)"></td>
       <td><input type="number" class="td-input td-num" min="1" value="${f.cantidad}" onchange="updateFilaProducto(${i},'cantidad',+this.value)"></td>
+      ${esGerente ? `
       <td><input type="number" class="td-input td-num" min="0" value="${f.precio}" onchange="updateFilaProducto(${i},'precio',+this.value)"></td>
       <td><input type="number" class="td-input td-num" min="0" max="100" value="${f.pct}" onchange="updateFilaProducto(${i},'pct',+this.value)"></td>
-      <td class="td-comision">${formatCOP(f.comision)}</td>
+      <td class="td-comision">${formatCOP(f.comision)}</td>` : ''}
       <td><button class="btn-accion btn-cancelar" onclick="eliminarFilaProducto(${i})" title="Eliminar">✕</button></td>
-    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-soft);padding:1rem;font-size:.8rem">Sin productos aún</td></tr>';
+    </tr>`).join('') || `<tr><td colspan="${cols}" style="text-align:center;color:var(--text-soft);padding:1rem;font-size:.8rem">Sin productos aún</td></tr>`;
 }
 
 function updateFilaServicio(i, campo, valor) {
@@ -1814,6 +1863,7 @@ async function guardarComision() {
   cerrarModal('modal-comision');
   renderStatsComisiones();
   renderTablaComisiones();
+  renderMisComisiones();
 }
 
 function renderStatsComisiones() {
@@ -1880,8 +1930,13 @@ function renderMisComisiones() {
       <td>${formatCOP(c.totalComisiones)}</td>
       <td><strong>${formatCOP(c.totalPagar)}</strong></td>
       <td><span class="badge-estado-com badge-com-${c.estadoPago}">${c.estadoPago === 'pagado' ? 'Pagado' : 'Pendiente'}</span></td>
+      <td>
+        <div class="acciones-cell">
+          <button class="btn-accion btn-editar" onclick="abrirModalComision(${c.id})" title="Editar">✎</button>
+        </div>
+      </td>
     </tr>`).join('')
-    : '<tr><td colspan="6" style="text-align:center;color:var(--text-soft);padding:1.5rem">Aún no tienes comisiones registradas</td></tr>';
+    : '<tr><td colspan="7" style="text-align:center;color:var(--text-soft);padding:1.5rem">Aún no tienes comisiones registradas — pulsa "+ Nueva comisión" para crear una</td></tr>';
 }
 
 // ============================================================
