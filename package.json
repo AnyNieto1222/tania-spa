@@ -1,16 +1,12 @@
 {
   "name": "tania-alisson",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "engines": {
-    "node": "18.x"
-  },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.92.0",
-    "express": "^5.2.1",
-    "sqlite3": "^6.0.1"
+    "better-sqlite3": "9.4.0",
+    "express": "^5.2.1"
   }
 }
