@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\" -Recurse -Force | Select-Object FullName, @{Name=\"Type\"; Expression={if \\($_.PSIsContainer\\) { \"DIR\" } else { \"FILE\" }}} | Format-Table -AutoSize)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\" -Depth 0 -Exclude \".git\" | Select-Object Name, @{Name=\"Type\"; Expression={if \\($_.PSIsContainer\\) { \"DIR\" } else { \"FILE\" }}})",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\" -Recurse -File | Where-Object {$_.Extension -in '.html', '.css', '.js'} | Where-Object {$_.FullName -notmatch 'node_modules'} | Select-Object FullName)",
+      "PowerShell(ls -Path \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\" -Directory | Where-Object {$_.Name -notmatch 'node_modules'})",
+      "PowerShell(Get-Command *)",
+      "PowerShell(python -c \"import PyPDF2; print\\('PyPDF2 ok'\\)\" 2>&1; python -c \"import pdfminer; print\\('pdfminer ok'\\)\" 2>&1; python -c \"import fitz; print\\('fitz ok'\\)\" 2>&1)",
+      "PowerShell(npm *)",
+      "PowerShell(ls \"$env:TEMP\\\\pdfread\\\\node_modules\\\\\" | Select-Object -First 20)",
+      "PowerShell(head *)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\" -Exclude \"node_modules\" -Recurse -File | Where-Object { $_.Extension -match '\\\\.\\(js|html|css\\)$' } | Select-Object -ExpandProperty FullName)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\" -Exclude \"node_modules\" -File | Where-Object { $_.Name -match '\\(server|app|index\\)\\\\.js$' })",
+      "PowerShell(Stop-Process *)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\" -Recurse -Force | Select-Object FullName, @{Name=\"Type\";Expression={if\\($_.PSIsContainer\\){\"DIR\"}else{\"FILE\"}}} | Sort-Object FullName | Format-Table -AutoSize)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\" -Force | Where-Object { $_.Name -notmatch 'node_modules|\\\\.git' })",
+      "PowerShell(netstat *)",
+      "PowerShell(Start-Sleep -Seconds 3; try { $r = Invoke-WebRequest -Uri \"http://localhost:3000\" -UseBasicParsing -TimeoutSec 5; \"OK — Servidor respondió: $\\($r.StatusCode\\)\" } catch { \"ERROR: $_\" })",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\" -Recurse -Force | Select-Object FullName, @{Name=\"Type\"; Expression={if \\($_.PSIsContainer\\) { \"DIR\" } else { \"FILE\" }}} | Sort-Object FullName | Format-Table -AutoSize)",
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\" -Force | Where-Object { $_.Name -notmatch '^\\\\.' -and $_.Name -ne 'node_modules' })",
+      "PowerShell(\\(Get-Content \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\\\\Home\\\\Home.Js\"\\).Count; \\(Get-Content \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\\\\Home\\\\Home.css\"\\).Count)"
+    ]
+  }
+}

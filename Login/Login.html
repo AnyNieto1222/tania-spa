@@ -1,0 +1,721 @@
+﻿    <!DOCTYPE html>
+    <html lang="es">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Tania Spa — Bienestar & Armonía</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap"
+            rel="stylesheet">
+        <link rel="stylesheet" href="../Login/Login.css">
+    </head>
+
+    <body>
+
+        <nav>
+            <div class="logo" onclick="show('hero', null)">
+                <img src="../img/Logo png.png" alt="Logo Tania Spa" class="logo-icon"> <span>Tania</span> Spa
+            </div>
+            <ul class="nav-links">
+                <li><a onclick="show('hero', this)" class="active">Inicio</a></li>
+                <li><a onclick="show('nosotros', this)">Quiénes Somos</a></li>
+                <li><a onclick="show('servicios', this)">Productos & Servicios</a></li>
+                <li><a onclick="show('contacto', this)">Contáctanos</a></li>
+            </ul>
+            <button class="nav-cta" onclick="show('login', null)">Iniciar Sesión</button>
+        </nav>
+
+        <section id="hero" class="active">
+            <div class="hero">
+                <div class="hero-petal p1"></div>
+                <div class="hero-petal p2"></div>
+                <div class="hero-content">
+                    <div class="hero-badge">✦ Somos Parte De Ti</div>
+                    <h1>Tu momento<br>de <em>paz</em> interior</h1>
+                    <p>Centro de Estética y Spa Integral, donde tu bienestar es nuestra prioridad</p>
+                    <div class="hero-btns">
+                        <button class="btn-primary"
+                            onclick="show('servicios', document.querySelectorAll('.nav-links a')[2])">Ver Servicios</button>
+                        <button class="btn-secondary" onclick="show('contacto', null)">Reservar Cita</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== QUIÉNES SOMOS ===== -->
+        <section id="nosotros">
+            <div class="about-wrap">
+                <div class="about-grid">
+                    <div class="about-text">
+                        <p class="section-label">✦ Nuestra historia</p>
+                        <h2 class="section-title">Un spa creado<br>con amor y pasión</h2>
+                        <p>En Tania Spa somos un centro de estética integral enfocado en el bienestar físico, emocional y
+                            espiritual de nuestros clientes.</p>
+                        <p> Nos especializamos en ofrecer una amplia gama de servicios diseñados para el cuidado personal,
+                            la relajación y el mejoramiento de la salud estética.</p>
+                        <p>Disponemos de un equipo altamente calificado, aparatología especializada y técnicas innovadoras
+                            que garantizan resultados efectivos, seguros y de alta calidad, brindando a cada cliente una
+                            experiencia única y personalizada.</p>
+                        <div class="about-values">
+
+                            <div class="val-card accordion-card" onclick="toggleAccordion(this)">
+                                <div class="val-card-header">
+                                    <div class="val-icon">
+                                        <svg viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                        </svg>
+                                    </div>
+                                    <div class="val-card-title">
+                                        <h4> Misión </h4>
+                                        <span class="val-subtitle">Nuestra Misión</span>
+                                    </div>
+                                    <span class="accordion-arrow">&#8964;</span>
+                                </div>
+                                <div class="accordion-body">
+                                    <p>
+                                        Brindar bienestar integral a nuestros clientes a través de servicios personalizados,
+                                        entendiendo que cada persona es única.
+                                        En Tania Spa trabajamos para ofrecer tratamientos efectivos, seguros y duraderos,
+                                        combinando estética, salud y hábitos de vida saludables que permitan lograr
+                                        resultados naturales y equilibrados.
+                                        Nos comprometemos a ofrecer excelencia en cada servicio, utilizando productos de
+                                        alta calidad y técnicas innovadoras, siempre en manos de profesionales capacitados..
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="val-card accordion-card" onclick="toggleAccordion(this)">
+                                <div class="val-card-header">
+                                    <div class="val-icon">
+                                        <svg viewBox="0 0 24 24">
+                                            <path
+                                                d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                        </svg>
+                                    </div>
+                                    <div class="val-card-title">
+                                        <h4>Visión</h4>
+                                        <span class="val-subtitle">Nuestra Visión</span>
+                                    </div>
+                                    <span class="accordion-arrow">&#8964;</span>
+                                </div>
+                                <div class="accordion-body">
+                                    <p>Ser reconocidos como uno de los mejores centros de estética y spa en la Sabana de
+                                        Bogotá, destacándonos por la calidad, innovación y compromiso con el bienestar
+                                        integral.
+                                        Buscamos consolidarnos como un referente en el sector, brindando experiencias únicas
+                                        que promuevan el equilibrio físico, emocional y espiritual de cada cliente.</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="about-visual">
+
+                        <div class="about-img-box">
+                            <img src="../img/Logo png.png" alt="Imagen Tania Spa" class="about-img">
+                        </div>
+                        <div class="about-badge">
+                            <strong>+13</strong>
+                            <span>Años de experiencia</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </section>
+
+        <!-- ===== PRODUCTOS & SERVICIOS ===== -->
+        <section id="servicios">
+            <div class="services-wrap">
+                <div class="services-header">
+                    <p class="section-label">✦ Nuestros tratamientos</p>
+                    <h2 class="section-title">Productos & Servicios</h2>
+                    <p class="svc-subtitle">Todos nuestros tratamientos son 100% personalizados. Se realiza valoración previa antes de iniciar cualquier tratamiento.</p>
+                </div>
+
+                <div class="acc-list">
+
+                    <!-- TRATAMIENTOS FACIALES -->
+                    <div class="acc-item">
+                        <button class="acc-btn" onclick="toggleAcc(this)">
+                            <div class="acc-icon-wrap">
+                                <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
+                            </div>
+                            <div class="acc-title-group">
+                                <h3>Tratamientos Faciales</h3>
+                                <span>Limpiezas · Hidratación · Plasma · Rejuvenecimiento · Capilar</span>
+                            </div>
+                            <svg class="acc-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                        </button>
+                        <div class="acc-body">
+                            <div class="svc-card-grid">
+                                <div class="svc-visual-card">
+                                    <img src="img/faciales.png" alt="Limpiezas Faciales">
+                                    <div class="svc-visual-content">
+                                        <h4>Limpiezas Faciales</h4>
+                                        <ul>
+                                            <li>Limpieza Facial Básica <span>45 min</span></li>
+                                            <li>Limpieza Facial Profunda <span>1 hora</span></li>
+                                            <li>Limpieza Facial Premium <span>1h 30 min</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card">
+                                    <img src="img/faciales2.png" alt="Hidratación Facial">
+                                    <div class="svc-visual-content">
+                                        <h4>Hidratación Facial</h4>
+                                        <ul>
+                                            <li>Hidratación Básica <span>45 min</span></li>
+                                            <li>Hidratación Plus <span>45 min</span></li>
+                                            <li>Hidratación Profunda <span>45 min</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card">
+                                    <img src="img/faciales3.png" alt="Porcelanización y Spa">
+                                    <div class="svc-visual-content">
+                                        <h4>Porcelanización & Spa</h4>
+                                        <ul>
+                                            <li>Porcelanización <span>1 hora</span></li>
+                                            <li>Masaje Craneofacial <span>45 min</span></li>
+                                            <li>Spa Facial <span>45 min</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card">
+                                    <img src="img/faciales4.png" alt="Plasma y Acné">
+                                    <div class="svc-visual-content">
+                                        <h4>Plasma & Acné / Manchas</h4>
+                                        <ul>
+                                            <li>Plasma Básico <span>1 hora</span></li>
+                                            <li>Plasma Plus <span>2 horas</span></li>
+                                            <li>Tratamiento Acné / Manchas <span>8 sesiones</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card">
+                                    <img src="img/faciales5.png" alt="Rejuvenecimiento">
+                                    <div class="svc-visual-content">
+                                        <h4>Rejuvenecimiento</h4>
+                                        <ul>
+                                            <li>Exosomas <span>1 sesión</span></li>
+                                            <li>Exosomas Pack <span>5 sesiones</span></li>
+                                            <li>Rejuveness <span>5 citas</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card">
+                                    <img src="img/faciales6.png" alt="Rellenos y Labios">
+                                    <div class="svc-visual-content">
+                                        <h4>Rellenos & Labios</h4>
+                                        <ul>
+                                            <li>Botox (50 unidades)</li>
+                                            <li>Rinomodelación</li>
+                                            <li>Hidralips <span>1 sesión</span></li>
+                                            <li>Hidralips Pack <span>5 sesiones</span></li>
+                                            <li>Labios — Ácido Hialurónico</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card">
+                                    <img src="img/capilar.png" alt="Tratamientos Capilares">
+                                    <div class="svc-visual-content">
+                                        <h4>Tratamientos Capilares</h4>
+                                        <ul>
+                                            <li>Plasma Capilar <span>1 sesión</span></li>
+                                            <li>Plasma Capilar Pack <span>5 sesiones</span></li>
+                                            <li>Ampollas Capilares <span>1 sesión</span></li>
+                                            <li>Ampollas Capilares Pack <span>8 sesiones</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TRATAMIENTOS CORPORALES -->
+                    <div class="acc-item">
+                        <button class="acc-btn" onclick="toggleAcc(this)">
+                            <div class="acc-icon-wrap">
+                                <svg viewBox="0 0 24 24"><path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z"/></svg>
+                            </div>
+                            <div class="acc-title-group">
+                                <h3>Tratamientos Corporales</h3>
+                                <span>Reducción · Tonificación · Moldeo · Glúteos · Detox</span>
+                            </div>
+                            <svg class="acc-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                        </button>
+                        <div class="acc-body">
+                            <div class="svc-card-grid">
+                                <div class="svc-visual-card">
+                                    <img src="img/corporales.png" alt="Glúteos y Piernas">
+                                    <div class="svc-visual-content">
+                                        <h4>Glúteos & Piernas</h4>
+                                        <ul>
+                                            <li>Masaje + Aparatología <span>5 citas</span></li>
+                                            <li>Masaje + Aparatología <span>10 citas</span></li>
+                                            <li>Masaje + Aparatología <span>12 citas</span></li>
+                                            <li>Glúteos Up con Mesoterapia <span>6 citas</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card">
+                                    <img src="img/corporales2.png" alt="Abdomen Cintura y Espalda">
+                                    <div class="svc-visual-content">
+                                        <h4>Abdomen, Cintura & Espalda</h4>
+                                        <ul>
+                                            <li>Masaje + Aparatología <span>5 citas</span></li>
+                                            <li>Masaje + Aparatología <span>10 citas</span></li>
+                                            <li>Masaje + Aparatología <span>12 citas</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card">
+                                    <img src="img/corporales3.png" alt="Cuerpo Completo">
+                                    <div class="svc-visual-content">
+                                        <h4>Cuerpo Completo</h4>
+                                        <ul>
+                                            <li>Masaje + Aparatología <span>5 citas</span></li>
+                                            <li>Masaje + Aparatología <span>8 citas</span></li>
+                                            <li>Masaje + Aparatología <span>12 citas</span></li>
+                                            <li>Con Mesoterapia <span>5 citas</span></li>
+                                            <li>Con Mesoterapia <span>8 citas</span></li>
+                                            <li>Con Mesoterapia <span>12 citas</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card">
+                                    <img src="img/corporales4.png" alt="Paquetes Especializados">
+                                    <div class="svc-visual-content">
+                                        <h4>Paquetes Especializados</h4>
+                                        <ul>
+                                            <li>Sesión Detox <span>45 min</span></li>
+                                            <li>Hidrocarboxi <span>5 sesiones</span></li>
+                                            <li>Hidrolipocavitación <span>7 sesiones</span></li>
+                                            <li>Premium <span>8 sesiones</span></li>
+                                            <li>Body Redux Full <span>10 sesiones</span></li>
+                                            <li>Full Body 2 <span>12 sesiones</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card">
+                                    <img src="img/corporales5.png" alt="Tensamax">
+                                    <div class="svc-visual-content">
+                                        <h4>Tensamax (Radiofrecuencia)</h4>
+                                        <ul>
+                                            <li>Cintura, Abd. y Espalda <span>1 sesión</span></li>
+                                            <li>Cintura, Abd. y Espalda <span>5 sesiones</span></li>
+                                            <li>Cintura, Abd. y Espalda <span>10 sesiones</span></li>
+                                            <li>Cuerpo Completo <span>1 sesión</span></li>
+                                            <li>Cuerpo Completo <span>5 sesiones</span></li>
+                                            <li>Cuerpo Completo <span>10 sesiones</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PLANES & RITUALES SPA -->
+                    <div class="acc-item">
+                        <button class="acc-btn" onclick="toggleAcc(this)">
+                            <div class="acc-icon-wrap">
+                                <svg viewBox="0 0 24 24"><path d="M12 3C6.5 3 2 6.58 2 11c0 6.65 8.68 13.66 9.03 13.95l.97.8.97-.8C13.32 24.66 22 17.65 22 11c0-4.42-4.5-8-10-8zm0 19.08c-1.96-1.7-8-7.4-8-11.08C4 7.65 7.58 5 12 5s8 2.65 8 6c0 3.68-6.04 9.38-8 11.08z"/></svg>
+                            </div>
+                            <div class="acc-title-group">
+                                <h3>Planes & Rituales Spa</h3>
+                                <span>Masajes · Rituales · Aromaterapia · Chocolaterapia · Piedras calientes</span>
+                            </div>
+                            <svg class="acc-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                        </button>
+                        <div class="acc-body">
+                            <div class="svc-card-grid">
+                                <div class="svc-visual-card">
+                                    <img src="img/spa-individual.png" alt="Planes Individuales">
+                                    <div class="svc-visual-content">
+                                        <h4>Planes Individuales</h4>
+                                        <ul>
+                                            <li>Ritual de Espalda <span>45 min</span></li>
+                                            <li>Masaje Cuerpo Completo <span>1 hora</span></li>
+                                            <li>Masaje + Electroestimulación Espalda <span>45 min</span></li>
+                                            <li>Masaje + Electroestimulación Cuerpo <span>60 min</span></li>
+                                            <li>Masaje Deportivo + Spa Facial <span>1h 20 min</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card">
+                                    <img src="img/planes-spa.png" alt="Rituales Individuales">
+                                    <div class="svc-visual-content">
+                                        <h4>Rituales Individuales</h4>
+                                        <ul>
+                                            <li>Ritual Baño de Sol <span>1h 30 min</span></li>
+                                            <li>Ritual Baño de Luna <span>2 horas</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card">
+                                    <img src="img/rituales-spa.png" alt="Rituales en Pareja o Grupo">
+                                    <div class="svc-visual-content">
+                                        <h4>Rituales en Pareja o Grupo</h4>
+                                        <ul>
+                                            <li>Ritual Consiéntete</li>
+                                            <li>Ritual Renacer</li>
+                                            <li>Ritual Paraíso</li>
+                                            <li>Ritual Relajación Total</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TERAPIAS ALTERNATIVAS -->
+                    <div class="acc-item">
+                        <button class="acc-btn" onclick="toggleAcc(this)">
+                            <div class="acc-icon-wrap">
+                                <svg viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 22h3.28c1.15-3.37 3.18-6.08 7.9-7.66V22h3V8zm-3-6h3v4h-3z"/></svg>
+                            </div>
+                            <div class="acc-title-group">
+                                <h3>Terapias Alternativas</h3>
+                                <span>Sueroterapia · Auriculoterapia · Desintoxicación · Acupuntura</span>
+                            </div>
+                            <svg class="acc-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                        </button>
+                        <div class="acc-body">
+                            <div class="svc-card-grid">
+                                <div class="svc-visual-card">
+                                    <img src="img/alternativos.png" alt="Sueroterapia">
+                                    <div class="svc-visual-content">
+                                        <h4>Sueroterapia</h4>
+                                        <ul>
+                                            <li>Sueroterapia <span>1 sesión</span></li>
+                                            <li>Sueroterapia Pack <span>3 sesiones</span></li>
+                                            <li>Sueroterapia Pack <span>5 sesiones</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card">
+                                    <img src="img/alternativos2.png" alt="Auriculoterapia y Desintoxicación">
+                                    <div class="svc-visual-content">
+                                        <h4>Auriculoterapia & Desintoxicación Iónica</h4>
+                                        <ul>
+                                            <li>Auriculoterapia <span>1 sesión</span></li>
+                                            <li>Auriculoterapia Pack <span>10 sesiones</span></li>
+                                            <li>Desintoxicación Iónica <span>1 hora</span></li>
+                                            <li>Desintoxicación Pack <span>3, 5 ó 10 ses.</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card">
+                                    <img src="img/vacuna-antiobesidad.png" alt="Vacuna Anti-Obesidad">
+                                    <div class="svc-visual-content">
+                                        <h4>Vacuna Anti-Obesidad</h4>
+                                        <ul>
+                                            <li>Vacuna Anti-Obesidad <span>1 sesión</span></li>
+                                            <li>Vacuna Anti-Obesidad Pack <span>5 sesiones</span></li>
+                                            <li>Vacuna Anti-Obesidad Pack <span>10 sesiones</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card svc-card-noimagen">
+                                    <div class="svc-card-placeholder">Otras Terapias</div>
+                                    <div class="svc-visual-content">
+                                        <h4>Acupuntura & Activación Sanguínea</h4>
+                                        <ul>
+                                            <li>Acupuntura</li>
+                                            <li>Activación Sanguínea</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DEPILACIÓN CON CERA Y LÁSER -->
+                    <div class="acc-item">
+                        <button class="acc-btn" onclick="toggleAcc(this)">
+                            <div class="acc-icon-wrap">
+                                <svg viewBox="0 0 24 24"><path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z"/></svg>
+                            </div>
+                            <div class="acc-title-group">
+                                <h3>Depilación con Cera y Láser</h3>
+                                <span>Cera 100% natural · Piel suave · Resultados duraderos</span>
+                            </div>
+                            <svg class="acc-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                        </button>
+                        <div class="acc-body">
+                            <div class="svc-card-grid">
+                                <div class="svc-visual-card">
+                                    <img src="img/depilacion-cera.png" alt="Depilación con Cera">
+                                    <div class="svc-visual-content">
+                                        <h4>Depilación con Cera Natural</h4>
+                                        <ul>
+                                            <li>Cejas</li>
+                                            <li>Bigote</li>
+                                            <li>Rostro</li>
+                                            <li>Axila</li>
+                                            <li>Media Pierna</li>
+                                            <li>Pierna Completa</li>
+                                            <li>Bikini</li>
+                                            <li>Bikini Completo</li>
+                                            <li>Kit Desechable Bioseguridad</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card">
+                                    <img src="img/depilacion-laser.png" alt="Depilación Láser">
+                                    <div class="svc-visual-content">
+                                        <h4>Depilación Láser Facial y Corporal</h4>
+                                        <ul>
+                                            <li>Zonas faciales</li>
+                                            <li>Zonas corporales</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SERVICIOS ESPECIALES -->
+                    <div class="acc-item">
+                        <button class="acc-btn" onclick="toggleAcc(this)">
+                            <div class="acc-icon-wrap">
+                                <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                            </div>
+                            <div class="acc-title-group">
+                                <h3>Servicios Especiales</h3>
+                                <span>Post Operatorios · Cejas & Pestañas · Kids Spa · Estética Gestacional</span>
+                            </div>
+                            <svg class="acc-arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                        </button>
+                        <div class="acc-body">
+                            <div class="svc-card-grid">
+                                <div class="svc-visual-card svc-card-noimagen">
+                                    <div class="svc-card-placeholder">Post Operatorios</div>
+                                    <div class="svc-visual-content">
+                                        <h4>Tratamientos Post Operatorios</h4>
+                                        <ul>
+                                            <li>Drenaje linfático post-operatorio</li>
+                                            <li>Masaje descontracturante</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card svc-card-noimagen">
+                                    <div class="svc-card-placeholder">Cejas & Pestañas</div>
+                                    <div class="svc-visual-content">
+                                        <h4>Cuidados de Cejas & Pestañas</h4>
+                                        <ul>
+                                            <li>Diseño y depilación de cejas</li>
+                                            <li>Lifting de pestañas</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card svc-card-noimagen">
+                                    <div class="svc-card-placeholder">Kids Spa & Fiestas</div>
+                                    <div class="svc-visual-content">
+                                        <h4>Kids Spa & Fiestas Infantiles</h4>
+                                        <ul>
+                                            <li>Spa infantil personalizado</li>
+                                            <li>Fiestas infantiles temáticas</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="svc-visual-card svc-card-noimagen">
+                                    <div class="svc-card-placeholder">Estética Gestacional</div>
+                                    <div class="svc-visual-content">
+                                        <h4>Estética Gestacional</h4>
+                                        <ul>
+                                            <li>Masaje para embarazadas</li>
+                                            <li>Tratamientos especiales gestantes</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== LOGIN ===== -->
+        <section id="login">
+            <div class="login-wrap">
+                <div class="login-card">
+                    <div class="login-left">
+                        <div class="ll-badge">✦ Tania Spa</div>
+                        <h2>Bienvenida<br>de vuelta</h2>
+                        <p>
+                        <h3 style="color: white;">Acceso de personal.</h3>
+                        </p><p>
+                        Si haces parte de nuestro equipo de Tania spa, inicia sesión para gestionar reservas, clientes y
+                        servicios</p>
+                        <div class="ll-features">
+                            <div class="ll-feat"><span class="ll-dot"></span>Historial de tratamientos</div>
+                            <div class="ll-feat"><span class="ll-dot"></span>Control de inventarios</div>
+                            <div class="ll-feat"><span class="ll-dot"></span>Generación de reportes</div>
+                        </div>
+                    </div>
+                    <div class="login-right">
+                        <h3>Iniciar Sesión</h3>
+                        <p class="sub">Ingresa tus datos para acceder a tu espacio</p>
+
+                        <div class="form-group">
+                            <label for="usuario">Usuario</label>
+                            <input type="text" id="usuario" placeholder="Ej: Danna.Lopez" autocomplete="username">
+                            <span class="field-error" id="usuario-error">Ingresa tu usuario (Nombre.Apellido)</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Contraseña</label>
+                            <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+                            <span class="field-error" id="password-error">La contraseña debe tener al menos 6 caracteres</span>
+                        </div>
+                        <div class="form-options">
+                            <label class="remember">
+                                <input type="checkbox" id="remember"> Recordarme
+                            </label>
+                        </div>
+                        <button class="btn-login" id="btn-login">Entrar a mi cuenta</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CONTÁCTANOS ===== -->
+        <section id="contacto">
+            <div class="contact-wrap">
+
+                <div class="contact-header">
+                    <p class="section-label">✦ Estamos para ti</p>
+                    <h2 class="section-title">Contáctanos</h2>
+                    <p class="contact-intro">Escríbenos, llámanos o visítanos. Estaremos encantadas de atenderte y ayudarte
+                        a encontrar el tratamiento perfecto para ti.</p>
+                </div>
+
+                <div class="contact-grid">
+
+                    <!-- INFO CARDS -->
+                    <div class="contact-info">
+
+                        <div class="contact-card">
+                            <div class="contact-card-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                </svg>
+                            </div>
+                           <div class="contact-card-body">
+                        <h4>Dirección</h4>
+                        <p>Centro de estética, Cl. 8 #6-36, Madrid, Cundinamarca</p>
+                        <a href="https://www.google.com/maps?q=Centro+de+estética,+Cl.+8+%236-36,+Madrid,+Cundinamarca" 
+                        target="_blank" 
+                        class="contact-link">
+                            Ver en Google Maps →
+                        </a>
+                    </div>
+                         </div>
+
+                        <div class="contact-card">
+                            <div class="contact-card-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+                                </svg>
+                            </div>
+                            <div class="contact-card-body">
+                                <h4>Teléfono</h4>
+                                <p>+57 319 4573650<br>
+                                    <a href="tel:+573194573650" class="contact-link">Llamar ahora →</a>
+                            </div>
+                        </div>
+
+
+
+                        <div class="contact-card">
+                            <div class="contact-card-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+                                    <path
+                                        d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.858L.057 23.5l5.797-1.522A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.034-1.388l-.361-.214-3.741.982.998-3.648-.235-.374A9.817 9.817 0 012.182 12C2.182 6.58 6.58 2.182 12 2.182S21.818 6.58 21.818 12 17.42 21.818 12 21.818z" />
+                                </svg>
+                            </div>
+                            <div class="contact-card-body">
+                                <h4>WhatsApp</h4>
+                                <p>Atención personalizada<br>Lunes a Sábado · 8am – 7pm</p>
+                                <a href="https://wa.me/573194573650" target="_blank" class="contact-link">Escribir por
+                                    WhatsApp →</a>
+                            </div>
+                        </div>
+
+                        <!-- HORARIO -->
+                        <div class="contact-schedule">
+                            <h4>Horario de atención</h4>
+                            <div class="schedule-grid">
+                                <span>Lunes – Viernes</span><span>8:00 am – 7:00 pm</span>
+                                <span>Sábados</span><span>9:00 am – 6:00 pm</span>
+                                <span>Domingos</span><span>10:00 am – 3:00 pm</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+             <!-- MAPA + REDES -->
+<div class="contact-right">
+
+    <div class="contact-map">
+        <div class="map-card">
+
+            <div class="map-header">
+                <i class="fas fa-map-marker-alt"></i>
+                <h3>Tania Spa</h3>
+            </div>
+
+            <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.2080648252604!2d-74.26510902469269!3d4.7338854413683125!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f784b0388fbf3%3A0x6ce5e6af8fb3021b!2sTania%20spa!5e0!3m2!1ses-419!2sco!4v1777697218407!5m2!1ses-419!2sco"
+                class="map-frame"
+                loading="lazy">
+            </iframe>
+        </div>
+    </div>
+
+                        <div class="contact-social">
+                            <h4>Síguenos en redes</h4>
+                            <div class="social-links">
+                                <a href=" https://www.instagram.com/esteticayspamadrid14/">
+                                    <svg viewBox="0 0 24 24">
+                                        <path
+                                            d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                                    </svg>
+                                    @taniaspa
+                                </a>
+                                <a href="https://www.facebook.com/profile.php?id=100015659130854&locale=es_LA">
+                                    <svg viewBox="0 0 24 24">
+                                        <path
+                                            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                                    </svg>
+                                    Tania Spa Oficial
+                                </a>
+                                <a href="https://www.tiktok.com/@taniaspa__">
+                                    <svg viewBox="0 0 24 24">
+                                        <path
+                                            d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
+                                    </svg>
+                                    @taniaspa
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== TOAST ===== -->
+        <div class="toast" id="toast"></div>
+
+        <script src="../Login/Login.Js"></script>
+    </body>
+
+    </html>

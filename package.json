@@ -1,0 +1,18 @@
+{
+  "name": "tania-alisson",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.92.0",
+    "better-sqlite3": "^12.9.0",
+    "express": "^5.2.1"
+  }
+}
