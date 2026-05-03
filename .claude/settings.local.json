@@ -20,7 +20,12 @@
       "PowerShell(Start-Sleep -Seconds 3; try { $r = Invoke-WebRequest -Uri \"http://localhost:3000\" -UseBasicParsing -TimeoutSec 5; \"OK — Servidor respondió: $\\($r.StatusCode\\)\" } catch { \"ERROR: $_\" })",
       "PowerShell(Get-ChildItem -Path \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\" -Recurse -Force | Select-Object FullName, @{Name=\"Type\"; Expression={if \\($_.PSIsContainer\\) { \"DIR\" } else { \"FILE\" }}} | Sort-Object FullName | Format-Table -AutoSize)",
       "PowerShell(Get-ChildItem -Path \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\" -Force | Where-Object { $_.Name -notmatch '^\\\\.' -and $_.Name -ne 'node_modules' })",
-      "PowerShell(\\(Get-Content \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\\\\Home\\\\Home.Js\"\\).Count; \\(Get-Content \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\\\\Home\\\\Home.css\"\\).Count)"
+      "PowerShell(\\(Get-Content \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\\\\Home\\\\Home.Js\"\\).Count; \\(Get-Content \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\\\\Home\\\\Home.css\"\\).Count)",
+      "Bash(node -e \"console.log\\('server ok'\\)\")",
+      "Bash(node server.js)",
+      "Bash(curl -s http://localhost:3000/Home/Home.html)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(node *)"
     ]
   }
 }

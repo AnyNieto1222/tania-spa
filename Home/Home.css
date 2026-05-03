@@ -718,4 +718,90 @@ body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--text-
 }
 @media(max-width:680px) { .hc-view-grid { grid-template-columns:1fr 1fr; } }
 .hc-view-grid label { font-size:.68rem; letter-spacing:.06em; text-transform:uppercase; color:var(--text-soft); display:block; margin-bottom:.15rem; }
+
+/* ===== CITAS DEL DÍA (esteticista) ===== */
+.citas-hoy-card {
+  background:linear-gradient(135deg,rgba(232,160,180,.12),rgba(201,168,212,.14));
+  border:1px solid var(--rose-light); border-radius:14px;
+  padding:1rem 1.2rem; margin-bottom:1.25rem;
+}
+.citas-hoy-titulo {
+  font-family:'Cormorant Garamond',serif; font-size:.95rem; font-weight:600;
+  color:var(--plum-dark); margin-bottom:.75rem;
+}
+.citas-hoy-lista { display:flex; flex-direction:column; gap:.6rem; }
+.cita-hoy-item {
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  background:#fff; border:1px solid var(--rose-light); border-radius:10px;
+  padding:.6rem 1rem;
+}
+.cita-hoy-info { display:flex; flex-direction:column; gap:.15rem; }
+.cita-hoy-info strong { font-size:.88rem; color:var(--text-dark); }
+.cita-hoy-det { font-size:.76rem; color:var(--text-soft); }
+.btn-atender-cita {
+  background:var(--plum); color:#fff; border:none; border-radius:8px;
+  padding:.45rem 1rem; font-family:'Jost',sans-serif; font-size:.78rem;
+  cursor:pointer; transition:opacity .2s; white-space:nowrap; flex-shrink:0;
+}
+.btn-atender-cita:hover { opacity:.85; }
+.btn-registrar-trat {
+  background:linear-gradient(135deg,var(--rose-dark),var(--plum));
+  color:#fff; border:none; border-radius:10px;
+  padding:.6rem 1.2rem; font-family:'Jost',sans-serif; font-size:.8rem;
+  cursor:pointer; transition:opacity .2s; display:inline-flex; align-items:center; gap:.4rem;
+}
+.btn-registrar-trat:hover { opacity:.88; }
 .hc-view-grid p { font-size:.84rem; color:var(--text-dark); }
+
+/* ===== HISTORIALES CLÍNICOS — SELECTOR DE TIPO ===== */
+.hc-tipo-grid {
+  display:grid; grid-template-columns:repeat(2,1fr); gap:1.25rem; margin-bottom:.5rem;
+}
+@media(max-width:600px) { .hc-tipo-grid { grid-template-columns:1fr; } }
+
+.hc-tipo-card {
+  display:flex; flex-direction:column; align-items:center; gap:.4rem;
+  padding:1.1rem .8rem; border-radius:14px; cursor:pointer;
+  border:2px solid var(--rose-light); background:#fff;
+  transition:all .2s; text-align:center;
+}
+.hc-tipo-card input[type="radio"] { display:none; }
+.hc-tipo-card:hover {
+  border-color:var(--plum-light);
+  background:rgba(201,168,212,.08);
+  transform:translateY(-2px);
+}
+.hc-tipo-card.selected {
+  border-color:var(--plum);
+  background:linear-gradient(135deg,rgba(201,168,212,.18),rgba(232,160,180,.12));
+  box-shadow:0 4px 18px rgba(124,77,138,.15);
+}
+.hc-tipo-icon  { font-size:1.7rem; line-height:1; }
+.hc-tipo-nombre { font-family:'Cormorant Garamond',serif; font-size:1rem; font-weight:700; color:var(--plum-dark); }
+.hc-tipo-desc  { font-size:.72rem; color:var(--text-soft); line-height:1.3; }
+.hc-tipo-card.selected .hc-tipo-nombre { color:var(--plum); }
+
+/* ===== HISTORIALES CLÍNICOS — BADGES DE TIPO ===== */
+.badge-hc-corporal {
+  background:rgba(201,168,212,.25); color:var(--plum-dark);
+  border:1px solid var(--plum-light); font-size:.65rem;
+  padding:.2rem .6rem; border-radius:20px; white-space:nowrap;
+}
+.badge-hc-facial {
+  background:rgba(232,160,180,.25); color:#9b2c5a;
+  border:1px solid rgba(232,160,180,.6); font-size:.65rem;
+  padding:.2rem .6rem; border-radius:20px; white-space:nowrap;
+}
+.badge-hc-capilar {
+  background:rgba(167,220,201,.25); color:#1a5c47;
+  border:1px solid rgba(110,231,183,.5); font-size:.65rem;
+  padding:.2rem .6rem; border-radius:20px; white-space:nowrap;
+}
+.fitz-wrapper {
+  margin-bottom:1.25rem;
+  border-radius:18px;
+  overflow:hidden;
+  background:linear-gradient(135deg,rgba(253,246,248,.9),rgba(245,208,220,.3));
+  border:1px solid var(--rose-light);
+}
+.fitz-svg { display:block; width:100%; height:auto; }

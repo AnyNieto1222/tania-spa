@@ -64,9 +64,20 @@ async function initDB() {
       tratamientoDescripcion TEXT DEFAULT '', numSesiones INTEGER DEFAULT 0,
       valorTotal REAL DEFAULT 0, abonos TEXT DEFAULT '[]', saldoPendiente REAL DEFAULT 0,
       observaciones TEXT DEFAULT '', firmaProfesional TEXT DEFAULT '', firmaPaciente TEXT DEFAULT '',
-      esteticista TEXT, fechaCreacion TEXT
+      esteticista TEXT, fechaCreacion TEXT, tipo TEXT DEFAULT 'corporal',
+      datosFacial TEXT DEFAULT '{}', datosCapilar TEXT DEFAULT '{}'
     )`,
   ], 'write');
+
+  // Migraciones para columnas nuevas en tablas existentes (seguras si ya existen)
+  const migrations = [
+    `ALTER TABLE historias_corporales ADD COLUMN tipo TEXT DEFAULT 'corporal'`,
+    `ALTER TABLE historias_corporales ADD COLUMN datosFacial TEXT DEFAULT '{}'`,
+    `ALTER TABLE historias_corporales ADD COLUMN datosCapilar TEXT DEFAULT '{}'`,
+  ];
+  for (const sql of migrations) {
+    try { await db.execute(sql); } catch (_) { /* columna ya existe */ }
+  }
 }
 
 // ── CLIENTES ────────────────────────────────────────────────────
@@ -242,7 +253,7 @@ app.delete('/api/comisiones/:id', async (req, res) => {
 // ── HISTORIAS CORPORALES ────────────────────────────────────────
 app.get('/api/historias-corporales', async (req, res) => {
   const result = await db.execute('SELECT * FROM historias_corporales');
-  const jsonFields = ['antecedentes', 'habitos', 'examenFisico', 'semiologia', 'mediciones', 'planConsultorio', 'planCasa', 'abonos'];
+  const jsonFields = ['antecedentes', 'habitos', 'examenFisico', 'semiologia', 'mediciones', 'planConsultorio', 'planCasa', 'abonos', 'datosFacial', 'datosCapilar'];
   res.json(result.rows.map(r => {
     const obj = { ...r };
     jsonFields.forEach(f => { try { obj[f] = JSON.parse(r[f]); } catch { obj[f] = r[f]; } });
@@ -254,7 +265,7 @@ app.post('/api/historias-corporales', async (req, res) => {
   const r = req.body;
   const js = f => JSON.stringify(r[f] || (f === 'planConsultorio' || f === 'abonos' ? [] : {}));
   await db.execute({
-    sql: 'INSERT INTO historias_corporales VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+    sql: 'INSERT INTO historias_corporales VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
     args: [r.id, r.nombre, r.cedula, r.fechaNacimiento, r.genero, r.estadoCivil, r.eps, r.rh,
       r.celular, r.direccion, r.ocupacion, r.email,
       r.contactoNombre, r.contactoParentesco, r.contactoCelular, r.contactoDireccion,
@@ -265,7 +276,8 @@ app.post('/api/historias-corporales', async (req, res) => {
       r.valorTotal || 0, js('abonos'),
       r.saldoPendiente || 0, r.observaciones || '',
       r.firmaProfesional || '', r.firmaPaciente || '',
-      r.esteticista || '', r.fechaCreacion || ''],
+      r.esteticista || '', r.fechaCreacion || '',
+      r.tipo || 'corporal', js('datosFacial'), js('datosCapilar')],
   });
   res.json(req.body);
 });
@@ -280,7 +292,7 @@ app.put('/api/historias-corporales/:id', async (req, res) => {
       motivoConsulta=?,antecedentes=?,habitos=?,examenFisico=?,semiologia=?,mediciones=?,
       planConsultorio=?,planCasa=?,tratamientoDescripcion=?,numSesiones=?,
       valorTotal=?,abonos=?,saldoPendiente=?,observaciones=?,firmaProfesional=?,
-      firmaPaciente=?,esteticista=? WHERE id=?`,
+      firmaPaciente=?,esteticista=?,tipo=?,datosFacial=?,datosCapilar=? WHERE id=?`,
     args: [r.nombre, r.cedula, r.fechaNacimiento, r.genero, r.estadoCivil, r.eps, r.rh,
       r.celular, r.direccion, r.ocupacion, r.email,
       r.contactoNombre, r.contactoParentesco, r.contactoCelular, r.contactoDireccion,
@@ -291,7 +303,8 @@ app.put('/api/historias-corporales/:id', async (req, res) => {
       r.valorTotal || 0, js('abonos'),
       r.saldoPendiente || 0, r.observaciones || '',
       r.firmaProfesional || '', r.firmaPaciente || '',
-      r.esteticista || '', req.params.id],
+      r.esteticista || '', r.tipo || 'corporal', js('datosFacial'), js('datosCapilar'),
+      req.params.id],
   });
   res.json({ ok: true });
 });

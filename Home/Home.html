@@ -51,7 +51,7 @@
           <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/></svg>Comisiones
         </a>
         <a class="nav-item" onclick="showTab('gerente','historia-corporal',this)">
-          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>Historia Corporal
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>Historiales Clínicos
         </a>
       </nav>
       <button class="sidebar-logout" onclick="salir()">
@@ -303,10 +303,10 @@
         </div>
       </div>
 
-      <!-- HISTORIA CLÍNICA CORPORAL (gerente) -->
+      <!-- HISTORIALES CLÍNICOS (gerente) -->
       <div id="gerente-historia-corporal" class="tab-content">
         <div class="dash-header">
-          <div><p class="dash-label">✦ Registros clínicos</p><h1 class="dash-title">Historia Clínica Corporal</h1></div>
+          <div><p class="dash-label">✦ Registros clínicos</p><h1 class="dash-title">Historiales Clínicos</h1></div>
           <button class="btn-primary-dash" onclick="abrirModalHistoriaCorporal()">+ Nueva historia</button>
         </div>
         <div class="search-bar">
@@ -315,7 +315,7 @@
         </div>
         <div class="tabla-wrap">
           <table class="dash-table">
-            <thead><tr><th>Paciente</th><th>Cédula</th><th>Edad</th><th>Celular</th><th>EPS / RH</th><th>Esteticista</th><th>Sesiones</th><th>Saldo</th><th>Fecha</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>Paciente</th><th>Tipo</th><th>Cédula</th><th>Edad</th><th>Celular</th><th>EPS / RH</th><th>Esteticista</th><th>Sesiones</th><th>Saldo</th><th>Fecha</th><th>Acciones</th></tr></thead>
             <tbody id="tbody-historias-corporales"></tbody>
           </table>
         </div>
@@ -352,7 +352,7 @@
           <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/></svg>Mis Comisiones
         </a>
         <a class="nav-item" onclick="showTab('esteticista','hc-corporal',this)">
-          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>Historia Corporal
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>Historiales Clínicos
         </a>
       </nav>
       <button class="sidebar-logout" onclick="salir()">
@@ -382,6 +382,9 @@
         </div>
         <div class="registro-layout">
           <div class="registro-form-card">
+
+            <!-- CITAS DEL DÍA -->
+            <div id="citas-hoy-esteticista"></div>
 
             <!-- INDICADOR DE PASOS -->
             <div class="step-indicator">
@@ -423,13 +426,57 @@
                   <div class="form-group"><label>Teléfono</label><input type="tel" id="nuevo-tel" placeholder="+57 310 000-0000"></div>
                 </div>
                 <div class="form-row-2">
+                  <div class="form-group"><label>Correo electrónico</label><input type="email" id="nuevo-email" placeholder="correo@ejemplo.com"></div>
                   <div class="form-group"><label>Fecha de nacimiento</label><input type="date" id="nuevo-fecha-nac"></div>
                 </div>
                 <div class="form-group"><label>Alergias o condiciones especiales</label><input type="text" id="nuevo-alergias" placeholder="Ej: alergia al látex, piel sensible..."></div>
+                <div class="form-divider"></div>
+                <p class="form-section-title" style="font-size:.82rem;margin-bottom:.75rem">Programar primera cita</p>
+                <div class="form-row-2">
+                  <div class="form-group"><label>Fecha de la cita *</label><input type="date" id="nuevo-cita-fecha"></div>
+                  <div class="form-group"><label>Hora *</label><input type="time" id="nuevo-cita-hora" min="07:00" max="20:00" step="1800"></div>
+                </div>
+                <div class="form-group"><label>Servicio solicitado *</label>
+                  <select id="nuevo-cita-servicio">
+                    <option value="">-- Selecciona --</option>
+                    <optgroup label="Faciales">
+                      <option>Limpieza Facial Básica</option><option>Limpieza Facial Profunda</option><option>Limpieza Facial Premium</option>
+                      <option>Hidratación Facial Profunda</option><option>Masaje Craneofacial</option><option>Spa Facial</option>
+                      <option>Plasma Básico</option><option>Plasma Plus</option><option>Exosomas</option><option>Rejuveness</option>
+                      <option>Botox</option><option>Rinomodelación</option><option>Hidralips</option>
+                      <option>Relleno Ácido Hialurónico</option><option>Dermapen</option><option>Radiofrecuencia Facial</option>
+                    </optgroup>
+                    <optgroup label="Capilares">
+                      <option>Plasma Capilar</option><option>Ampollas Capilares</option><option>Tónico Capilar</option>
+                    </optgroup>
+                    <optgroup label="Corporales">
+                      <option>Sesión Detox</option><option>Maderoterapia</option><option>Hidrolipocavitación</option>
+                      <option>Tensamax</option><option>Levantamiento de Glúteos</option><option>Plan Premium (8 sesiones)</option>
+                      <option>Body Redux Full (10 sesiones)</option><option>Full Body 2 (12 sesiones)</option>
+                    </optgroup>
+                    <optgroup label="Terapias Alternativas">
+                      <option>Acupuntura</option><option>Auriculoterapia</option><option>Desintoxicación Iónica</option>
+                      <option>Sueroterapia</option><option>Carboxiterapia</option><option>Fototerapia LED</option>
+                    </optgroup>
+                    <optgroup label="Masajes y Rituales">
+                      <option>Masaje Cuerpo Completo</option><option>Masaje Descontracturante</option><option>Masaje Deportivo</option>
+                      <option>Masaje para Embarazadas</option><option>Chocolaterapia</option><option>Ritual de Espalda</option>
+                      <option>Ritual Relajación Total</option><option>Ritual Consiéntete</option><option>Ritual Renacer</option><option>Ritual Paraíso</option>
+                    </optgroup>
+                    <optgroup label="Especiales">
+                      <option>Kids Spa</option><option>Fiestas Infantiles</option><option>Estética Gestacional</option>
+                    </optgroup>
+                    <optgroup label="Depilación">
+                      <option>Depilación con Cera Facial</option><option>Depilación con Cera Corporal</option>
+                      <option>Depilación Láser Facial</option><option>Depilación Láser Corporal</option>
+                    </optgroup>
+                    <optgroup label="Post Operatorios"><option>Post Operatorio</option></optgroup>
+                  </select>
+                </div>
               </div>
               <div class="step-nav">
                 <span></span>
-                <button class="btn-primary-dash" onclick="irPaso(2)">Siguiente →</button>
+                <button class="btn-primary-dash" id="btn-paso1-siguiente" onclick="irPaso(2)">Siguiente →</button>
               </div>
             </div>
 
@@ -588,10 +635,10 @@
         </div>
       </div>
 
-      <!-- HISTORIA CORPORAL (esteticista) -->
+      <!-- HISTORIALES CLÍNICOS (esteticista) -->
       <div id="esteticista-hc-corporal" class="tab-content">
         <div class="dash-header">
-          <div><p class="dash-label">✦ Historias clínicas</p><h1 class="dash-title">Historia Corporal</h1></div>
+          <div><p class="dash-label">✦ Historias clínicas</p><h1 class="dash-title">Historiales Clínicos</h1></div>
           <button class="btn-primary-dash" onclick="abrirModalHistoriaCorporal()">+ Nueva historia</button>
         </div>
         <div class="search-bar">
@@ -600,7 +647,7 @@
         </div>
         <div class="tabla-wrap">
           <table class="dash-table">
-            <thead><tr><th>Paciente</th><th>Cédula</th><th>Edad</th><th>Celular</th><th>Sesiones</th><th>Saldo</th><th>Fecha</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>Paciente</th><th>Tipo</th><th>Cédula</th><th>Edad</th><th>Celular</th><th>Sesiones</th><th>Saldo</th><th>Fecha</th><th>Acciones</th></tr></thead>
             <tbody id="tbody-hc-corporal-est"></tbody>
           </table>
         </div>
@@ -636,6 +683,49 @@
         <div class="form-group"><label>Esteticista asignada</label>
           <select id="g-esteticista"><option>María González</option><option>Laura Díaz</option><option>Carlos Vega</option></select>
         </div>
+      </div>
+      <div class="form-divider"></div>
+      <p class="form-section-title" style="font-size:.82rem;margin-bottom:.75rem">Primera cita (opcional)</p>
+      <div class="form-row-2">
+        <div class="form-group"><label>Fecha</label><input type="date" id="g-cita-fecha"></div>
+        <div class="form-group"><label>Hora</label><input type="time" id="g-cita-hora" min="07:00" max="20:00" step="1800"></div>
+      </div>
+      <div class="form-group"><label>Servicio</label>
+        <select id="g-cita-servicio">
+          <option value="">-- Selecciona (opcional) --</option>
+          <optgroup label="Faciales">
+            <option>Limpieza Facial Básica</option><option>Limpieza Facial Profunda</option><option>Limpieza Facial Premium</option>
+            <option>Hidratación Facial Profunda</option><option>Masaje Craneofacial</option><option>Spa Facial</option>
+            <option>Plasma Básico</option><option>Plasma Plus</option><option>Exosomas</option><option>Rejuveness</option>
+            <option>Botox</option><option>Rinomodelación</option><option>Hidralips</option>
+            <option>Relleno Ácido Hialurónico</option><option>Dermapen</option><option>Radiofrecuencia Facial</option>
+          </optgroup>
+          <optgroup label="Capilares">
+            <option>Plasma Capilar</option><option>Ampollas Capilares</option><option>Tónico Capilar</option>
+          </optgroup>
+          <optgroup label="Corporales">
+            <option>Sesión Detox</option><option>Maderoterapia</option><option>Hidrolipocavitación</option>
+            <option>Tensamax</option><option>Levantamiento de Glúteos</option><option>Plan Premium (8 sesiones)</option>
+            <option>Body Redux Full (10 sesiones)</option><option>Full Body 2 (12 sesiones)</option>
+          </optgroup>
+          <optgroup label="Terapias Alternativas">
+            <option>Acupuntura</option><option>Auriculoterapia</option><option>Desintoxicación Iónica</option>
+            <option>Sueroterapia</option><option>Carboxiterapia</option><option>Fototerapia LED</option>
+          </optgroup>
+          <optgroup label="Masajes y Rituales">
+            <option>Masaje Cuerpo Completo</option><option>Masaje Descontracturante</option><option>Masaje Deportivo</option>
+            <option>Masaje para Embarazadas</option><option>Chocolaterapia</option><option>Ritual de Espalda</option>
+            <option>Ritual Relajación Total</option><option>Ritual Consiéntete</option><option>Ritual Renacer</option><option>Ritual Paraíso</option>
+          </optgroup>
+          <optgroup label="Especiales">
+            <option>Kids Spa</option><option>Fiestas Infantiles</option><option>Estética Gestacional</option>
+          </optgroup>
+          <optgroup label="Depilación">
+            <option>Depilación con Cera Facial</option><option>Depilación con Cera Corporal</option>
+            <option>Depilación Láser Facial</option><option>Depilación Láser Corporal</option>
+          </optgroup>
+          <optgroup label="Post Operatorios"><option>Post Operatorio</option></optgroup>
+        </select>
       </div>
       <div class="modal-footer">
         <button class="btn-cancel" onclick="cerrarModal('modal-nuevo-cliente')">Cancelar</button>
@@ -876,6 +966,9 @@
       <div class="form-group"><label>Notas adicionales</label><textarea id="edit-cita-notas"></textarea></div>
       <div class="modal-footer">
         <button class="btn-cancel" onclick="cerrarModal('modal-editar-cita')">Cancelar</button>
+        <button class="btn-registrar-trat" id="btn-registrar-desde-cita" onclick="iniciarRegistroDesdeCita()" style="display:none">
+          Registrar Tratamiento →
+        </button>
         <button class="btn-primary-dash" onclick="actualizarCita()">Actualizar cita</button>
       </div>
     </div>
@@ -1052,28 +1145,83 @@
     </div>
   </div>
 
-  <!-- MODAL HISTORIA CLÍNICA CORPORAL -->
+  <!-- MODAL HISTORIALES CLÍNICOS -->
   <div class="modal-overlay" id="modal-historia-corporal">
     <div class="modal-card modal-xl">
       <div class="modal-header">
-        <h3 id="modal-hc-titulo">Historia Clínica Corporal</h3>
+        <h3 id="modal-hc-titulo">Nueva Historia Clínica</h3>
         <button class="modal-close" onclick="cerrarModal('modal-historia-corporal')">✕</button>
       </div>
       <input type="hidden" id="hc-id">
 
-      <!-- PASOS -->
+      <!-- INDICADOR DE PASOS (se actualiza por JS) -->
       <div class="step-indicator" id="hc-step-indicator">
-        <div class="step-item active" id="hc-step-ind-1"><div class="step-dot">1</div><span class="step-label">Datos personales</span></div>
+        <div class="step-item active" id="hc-step-ind-0"><div class="step-dot">0</div><span class="step-label">Tipo / Cliente</span></div>
+        <div class="step-connector" id="hc-conn-0"></div>
+        <div class="step-item" id="hc-step-ind-1"><div class="step-dot">1</div><span class="step-label">Datos personales</span></div>
         <div class="step-connector" id="hc-conn-1"></div>
-        <div class="step-item" id="hc-step-ind-2"><div class="step-dot">2</div><span class="step-label">Antecedentes</span></div>
+        <div class="step-item" id="hc-step-ind-2"><div class="step-dot">2</div><span class="step-label" id="hc-label-paso2">Análisis</span></div>
         <div class="step-connector" id="hc-conn-2"></div>
-        <div class="step-item" id="hc-step-ind-3"><div class="step-dot">3</div><span class="step-label">Semiología</span></div>
-        <div class="step-connector" id="hc-conn-3"></div>
-        <div class="step-item" id="hc-step-ind-4"><div class="step-dot">4</div><span class="step-label">Tratamiento</span></div>
+        <div class="step-item" id="hc-step-ind-3"><div class="step-dot">3</div><span class="step-label" id="hc-label-paso3">Semiología</span></div>
+        <div class="step-connector" id="hc-conn-3" style="display:none"></div>
+        <div class="step-item" id="hc-step-ind-4" style="display:none"><div class="step-dot">4</div><span class="step-label">Tratamiento</span></div>
       </div>
 
-      <!-- PASO 1: DATOS PERSONALES -->
-      <div class="form-step active" id="hc-step-1">
+      <!-- ══════════════════════════════════════════
+           PASO 0: TIPO DE HISTORIA Y CLIENTE
+      ═══════════════════════════════════════════ -->
+      <div class="form-step active" id="hc-step-0">
+        <p class="form-section-title">Seleccionar tipo de historial</p>
+        <div class="hc-tipo-grid">
+          <label class="hc-tipo-card selected" id="hc-card-corporal">
+            <input type="radio" name="hc-tipo-radio" value="corporal" checked onchange="hcSeleccionarTipo()">
+            <span class="hc-tipo-icon">🌿</span>
+            <span class="hc-tipo-nombre">Corporal</span>
+            <span class="hc-tipo-desc">Tratamientos corporales, semiología y mediciones</span>
+          </label>
+          <label class="hc-tipo-card" id="hc-card-facial">
+            <input type="radio" name="hc-tipo-radio" value="facial" onchange="hcSeleccionarTipo()">
+            <span class="hc-tipo-icon">🌸</span>
+            <span class="hc-tipo-nombre">Facial</span>
+            <span class="hc-tipo-desc">Análisis de piel, fototipo y tratamientos faciales</span>
+          </label>
+        </div>
+
+        <div class="form-divider"></div>
+        <p class="form-section-title">Información del cliente</p>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label>Tipo de cliente</label>
+            <select id="hc-tipo-cliente" onchange="hcToggleCliente()">
+              <option value="antiguo">Cliente antiguo</option>
+              <option value="nuevo">Cliente nuevo</option>
+            </select>
+          </div>
+          <div class="form-group" id="hc-grupo-select-cliente">
+            <label>Seleccionar cliente</label>
+            <select id="hc-select-cliente"><option value="">-- Elige un cliente --</option></select>
+          </div>
+        </div>
+        <div id="hc-campos-cliente-nuevo" style="display:none">
+          <div class="form-row-2">
+            <div class="form-group"><label>Nombre completo *</label><input type="text" id="hc-nuevo-nombre" placeholder="Ej: Laura Pérez"></div>
+            <div class="form-group"><label>Teléfono *</label><input type="tel" id="hc-nuevo-tel" placeholder="+57 310 000-0000"></div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group"><label>Correo electrónico</label><input type="email" id="hc-nuevo-email" placeholder="correo@ejemplo.com"></div>
+            <div class="form-group"><label>Alergias</label><input type="text" id="hc-nuevo-alergias" placeholder="Ej: látex, fragancias..."></div>
+          </div>
+        </div>
+        <div class="step-nav">
+          <span></span>
+          <button class="btn-primary-dash" onclick="hcContinuarPaso0()">Continuar →</button>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════
+           PASO 1: DATOS PERSONALES (común a todos)
+      ═══════════════════════════════════════════ -->
+      <div class="form-step" id="hc-step-1">
         <p class="form-section-title">Datos del paciente</p>
         <div class="com-grid-3">
           <div class="form-group"><label>Nombre completo *</label><input type="text" id="hc-nombre" placeholder="Nombre Apellido"></div>
@@ -1106,13 +1254,15 @@
         </div>
         <div class="form-group"><label>Motivo de consulta</label><textarea id="hc-motivo" placeholder="Descripción del motivo principal de la consulta..."></textarea></div>
         <div class="step-nav">
-          <span></span>
+          <button class="btn-cancel" id="hc-btn-1-ant" onclick="hcIrPaso(0)">← Anterior</button>
           <button class="btn-primary-dash" onclick="hcIrPaso(2)">Siguiente →</button>
         </div>
       </div>
 
-      <!-- PASO 2: ANTECEDENTES Y HÁBITOS -->
-      <div class="form-step" id="hc-step-2">
+      <!-- ══════════════════════════════════════════
+           PASO 2 — CORPORAL: ANTECEDENTES Y HÁBITOS
+      ═══════════════════════════════════════════ -->
+      <div class="form-step" id="hc-step-2-corporal">
         <p class="form-section-title">Antecedentes</p>
         <div class="antec-grid">
           <div class="antec-item"><label class="antec-label">Dermatológicos</label><div class="si-no-wrap"><label><input type="radio" name="antec-derm" value="si"> Sí</label><label><input type="radio" name="antec-derm" value="no" checked> No</label></div><input type="text" id="antec-derm-desc" class="antec-desc" placeholder="Descripción..."></div>
@@ -1165,8 +1315,193 @@
         </div>
       </div>
 
-      <!-- PASO 3: SEMIOLOGÍA CORPORAL -->
-      <div class="form-step" id="hc-step-3">
+      <!-- ══════════════════════════════════════════
+           PASO 2 — FACIAL: ANÁLISIS FACIAL
+      ═══════════════════════════════════════════ -->
+      <div class="form-step" id="hc-step-2-facial">
+        <p class="form-section-title">Análisis Facial</p>
+
+        <!-- REFERENCIA VISUAL: ESCALA DE FITZPATRICK -->
+        <div class="fitz-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 210" class="fitz-svg" role="img" aria-label="Escala de Fitzpatrick — Fototipo de piel">
+            <defs>
+              <!-- Fondo -->
+              <linearGradient id="fitz-bg" x1="0%" y1="0%" x2="100%" y2="110%">
+                <stop offset="0%"   stop-color="#fdf6f8"/>
+                <stop offset="100%" stop-color="#f5e6ef"/>
+              </linearGradient>
+              <!-- Gradientes esféricos por tono -->
+              <radialGradient id="fitz-g1" cx="38%" cy="32%" r="65%" fx="38%" fy="32%">
+                <stop offset="0%"   stop-color="#fff7f4"/>
+                <stop offset="55%"  stop-color="#fde8e0"/>
+                <stop offset="100%" stop-color="#f0c4b4"/>
+              </radialGradient>
+              <radialGradient id="fitz-g2" cx="38%" cy="32%" r="65%" fx="38%" fy="32%">
+                <stop offset="0%"   stop-color="#fff3e8"/>
+                <stop offset="55%"  stop-color="#f5d2b0"/>
+                <stop offset="100%" stop-color="#e0a880"/>
+              </radialGradient>
+              <radialGradient id="fitz-g3" cx="38%" cy="32%" r="65%" fx="38%" fy="32%">
+                <stop offset="0%"   stop-color="#f8d8a8"/>
+                <stop offset="55%"  stop-color="#e8b07a"/>
+                <stop offset="100%" stop-color="#c07840"/>
+              </radialGradient>
+              <radialGradient id="fitz-g4" cx="38%" cy="32%" r="65%" fx="38%" fy="32%">
+                <stop offset="0%"   stop-color="#d8a060"/>
+                <stop offset="55%"  stop-color="#b87838"/>
+                <stop offset="100%" stop-color="#8a5020"/>
+              </radialGradient>
+              <radialGradient id="fitz-g5" cx="38%" cy="32%" r="65%" fx="38%" fy="32%">
+                <stop offset="0%"   stop-color="#9a6840"/>
+                <stop offset="55%"  stop-color="#7a4828"/>
+                <stop offset="100%" stop-color="#4e2e10"/>
+              </radialGradient>
+              <radialGradient id="fitz-g6" cx="38%" cy="32%" r="65%" fx="38%" fy="32%">
+                <stop offset="0%"   stop-color="#5a3220"/>
+                <stop offset="55%"  stop-color="#3a1e0e"/>
+                <stop offset="100%" stop-color="#1e0c04"/>
+              </radialGradient>
+              <!-- Brillo especular -->
+              <radialGradient id="fitz-shine" cx="38%" cy="28%" r="35%">
+                <stop offset="0%"   stop-color="#fff" stop-opacity="0.45"/>
+                <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+              </radialGradient>
+              <!-- Sombra suave card -->
+              <filter id="fitz-shadow" x="-4%" y="-4%" width="108%" height="118%">
+                <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#c9a8d4" flood-opacity="0.18"/>
+              </filter>
+            </defs>
+
+            <!-- Tarjeta principal -->
+            <rect width="760" height="210" rx="18" fill="url(#fitz-bg)" stroke="#f0c8d8" stroke-width="1.5" filter="url(#fitz-shadow)"/>
+            <!-- Franja decorativa superior -->
+            <rect width="760" height="4" rx="2" fill="url(#fitz-bg-stripe)" y="0"/>
+            <linearGradient id="fitz-bg-stripe" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stop-color="#e8a0b4"/>
+              <stop offset="50%"  stop-color="#c9a8d4"/>
+              <stop offset="100%" stop-color="#e8a0b4"/>
+            </linearGradient>
+            <rect width="760" height="3" rx="2" fill="url(#fitz-bg-stripe)"/>
+
+            <!-- Título -->
+            <text x="380" y="32" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="16.5" font-weight="600" fill="#4a2458" letter-spacing="0.8">Escala de Fitzpatrick — Fototipo de Piel</text>
+            <!-- Líneas decorativas del título -->
+            <line x1="48" y1="43" x2="298" y2="43" stroke="#e8a0b4" stroke-width="0.8" opacity="0.7"/>
+            <circle cx="380" cy="43" r="3" fill="#c9a8d4"/>
+            <line x1="462" y1="43" x2="712" y2="43" stroke="#e8a0b4" stroke-width="0.8" opacity="0.7"/>
+
+            <!-- ── TIPO I ── -->
+            <circle cx="80"  cy="115" r="40" fill="url(#fitz-g1)" stroke="#f0c8d8" stroke-width="1.5"/>
+            <circle cx="80"  cy="115" r="40" fill="url(#fitz-shine)"/>
+            <text x="80"  y="122" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="22" font-weight="700" fill="#c06080" opacity="0.75">I</text>
+            <text x="80"  y="169" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="13.5" font-weight="700" fill="#4a2458">Tipo I</text>
+            <text x="80"  y="182" text-anchor="middle" font-family="Jost, Arial, sans-serif" font-size="9.5" fill="#7a4a6a">Piel muy clara</text>
+            <text x="80"  y="196" text-anchor="middle" font-family="Jost, Arial, sans-serif" font-size="8.5" fill="#b88aa8" opacity="0.9">Siempre se quema</text>
+
+            <!-- ── TIPO II ── -->
+            <circle cx="206" cy="115" r="40" fill="url(#fitz-g2)" stroke="#f0c8d8" stroke-width="1.5"/>
+            <circle cx="206" cy="115" r="40" fill="url(#fitz-shine)"/>
+            <text x="206" y="122" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="22" font-weight="700" fill="#9e6040" opacity="0.7">II</text>
+            <text x="206" y="169" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="13.5" font-weight="700" fill="#4a2458">Tipo II</text>
+            <text x="206" y="182" text-anchor="middle" font-family="Jost, Arial, sans-serif" font-size="9.5" fill="#7a4a6a">Piel clara</text>
+            <text x="206" y="196" text-anchor="middle" font-family="Jost, Arial, sans-serif" font-size="8.5" fill="#b88aa8" opacity="0.9">Se quema fácil</text>
+
+            <!-- ── TIPO III ── -->
+            <circle cx="332" cy="115" r="40" fill="url(#fitz-g3)" stroke="#e8c0b0" stroke-width="1.5"/>
+            <circle cx="332" cy="115" r="40" fill="url(#fitz-shine)"/>
+            <text x="332" y="122" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="22" font-weight="700" fill="#fff" opacity="0.8">III</text>
+            <text x="332" y="169" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="13.5" font-weight="700" fill="#4a2458">Tipo III</text>
+            <text x="332" y="182" text-anchor="middle" font-family="Jost, Arial, sans-serif" font-size="9.5" fill="#7a4a6a">Piel intermedia</text>
+            <text x="332" y="196" text-anchor="middle" font-family="Jost, Arial, sans-serif" font-size="8.5" fill="#b88aa8" opacity="0.9">A veces se quema</text>
+
+            <!-- ── TIPO IV ── -->
+            <circle cx="458" cy="115" r="40" fill="url(#fitz-g4)" stroke="#d4a868" stroke-width="1.5"/>
+            <circle cx="458" cy="115" r="40" fill="url(#fitz-shine)"/>
+            <text x="458" y="122" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="22" font-weight="700" fill="#fff" opacity="0.85">IV</text>
+            <text x="458" y="169" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="13.5" font-weight="700" fill="#4a2458">Tipo IV</text>
+            <text x="458" y="182" text-anchor="middle" font-family="Jost, Arial, sans-serif" font-size="9.5" fill="#7a4a6a">Piel morena</text>
+            <text x="458" y="196" text-anchor="middle" font-family="Jost, Arial, sans-serif" font-size="8.5" fill="#b88aa8" opacity="0.9">Rara vez se quema</text>
+
+            <!-- ── TIPO V ── -->
+            <circle cx="584" cy="115" r="40" fill="url(#fitz-g5)" stroke="#c9a8d4" stroke-width="1.5"/>
+            <circle cx="584" cy="115" r="40" fill="url(#fitz-shine)"/>
+            <text x="584" y="122" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="22" font-weight="700" fill="#fff" opacity="0.88">V</text>
+            <text x="584" y="169" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="13.5" font-weight="700" fill="#4a2458">Tipo V</text>
+            <text x="584" y="182" text-anchor="middle" font-family="Jost, Arial, sans-serif" font-size="9.5" fill="#7a4a6a">Piel oscura</text>
+            <text x="584" y="196" text-anchor="middle" font-family="Jost, Arial, sans-serif" font-size="8.5" fill="#b88aa8" opacity="0.9">Muy rara vez</text>
+
+            <!-- ── TIPO VI ── -->
+            <circle cx="710" cy="115" r="40" fill="url(#fitz-g6)" stroke="#c9a8d4" stroke-width="1.5"/>
+            <circle cx="710" cy="115" r="40" fill="url(#fitz-shine)"/>
+            <text x="710" y="122" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="22" font-weight="700" fill="#fff" opacity="0.88">VI</text>
+            <text x="710" y="169" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="13.5" font-weight="700" fill="#4a2458">Tipo VI</text>
+            <text x="710" y="182" text-anchor="middle" font-family="Jost, Arial, sans-serif" font-size="9.5" fill="#7a4a6a">Piel muy oscura</text>
+            <text x="710" y="196" text-anchor="middle" font-family="Jost, Arial, sans-serif" font-size="8.5" fill="#b88aa8" opacity="0.9">Nunca se quema</text>
+
+            <!-- Nota al pie -->
+            <text x="380" y="207" text-anchor="middle" font-family="Jost, Arial, sans-serif" font-size="8" fill="#c9a8d4" letter-spacing="0.5">Selecciona el fototipo que corresponde a la paciente en el campo anterior</text>
+          </svg>
+        </div>
+
+        <div class="com-grid-3">
+          <div class="form-group">
+            <label>Tipo de piel</label>
+            <select id="fc-tipo-piel">
+              <option value="">--</option>
+              <option>Normal</option><option>Seca</option><option>Grasa</option>
+              <option>Mixta</option><option>Sensible</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Fototipo (Fitzpatrick)</label>
+            <select id="fc-fototipo">
+              <option value="">--</option>
+              <option value="I">I — Siempre se quema, nunca se broncea</option>
+              <option value="II">II — Se quema fácilmente, bronceado mínimo</option>
+              <option value="III">III — A veces se quema, bronceado moderado</option>
+              <option value="IV">IV — Rara vez se quema, bronceado fácil</option>
+              <option value="V">V — Muy rara vez se quema, bronceado oscuro</option>
+              <option value="VI">VI — No se quema, piel muy oscura</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Estado actual de la piel</label>
+            <div class="checkbox-group">
+              <label class="checkbox-label"><input type="checkbox" name="fc-estado-piel" value="Deshidratación"><span>Deshidratación</span></label>
+              <label class="checkbox-label"><input type="checkbox" name="fc-estado-piel" value="Descamación"><span>Descamación</span></label>
+              <label class="checkbox-label"><input type="checkbox" name="fc-estado-piel" value="Poros dilatados"><span>Poros dilatados</span></label>
+              <label class="checkbox-label"><input type="checkbox" name="fc-estado-piel" value="Líneas expresión"><span>Líneas expresión</span></label>
+              <label class="checkbox-label"><input type="checkbox" name="fc-estado-piel" value="Manchas activas"><span>Manchas activas</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Patologías</label>
+          <div class="checkbox-group">
+            <label class="checkbox-label"><input type="checkbox" name="fc-patologias" value="Acné"><span>Acné</span></label>
+            <label class="checkbox-label"><input type="checkbox" name="fc-patologias" value="Rosácea"><span>Rosácea</span></label>
+            <label class="checkbox-label"><input type="checkbox" name="fc-patologias" value="Melasma"><span>Melasma</span></label>
+            <label class="checkbox-label"><input type="checkbox" name="fc-patologias" value="Manchas"><span>Manchas</span></label>
+            <label class="checkbox-label"><input type="checkbox" name="fc-patologias" value="Envejecimiento"><span>Envejecimiento</span></label>
+            <label class="checkbox-label"><input type="checkbox" name="fc-patologias" value="Cicatrices"><span>Cicatrices</span></label>
+            <label class="checkbox-label"><input type="checkbox" name="fc-patologias" value="Sensibilidad"><span>Sensibilidad</span></label>
+          </div>
+        </div>
+        <div class="com-grid-2" style="margin-top:.5rem">
+          <div class="form-group"><label>Antecedentes faciales</label><textarea id="fc-antecedentes" placeholder="Tratamientos previos, cirugías, historial..."></textarea></div>
+          <div class="form-group"><label>Tratamientos previos</label><textarea id="fc-tratamientos-previos" placeholder="Describa tratamientos estéticos anteriores..."></textarea></div>
+        </div>
+        <div class="form-group"><label>Alergias / Medicamentos</label><textarea id="fc-alergias-meds" placeholder="Alergias conocidas, medicamentos en uso..."></textarea></div>
+        <div class="step-nav">
+          <button class="btn-cancel" onclick="hcIrPaso(1)">← Anterior</button>
+          <button class="btn-primary-dash" onclick="hcIrPaso(3)">Siguiente →</button>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════
+           PASO 3 — CORPORAL: SEMIOLOGÍA CORPORAL
+      ═══════════════════════════════════════════ -->
+      <div class="form-step" id="hc-step-3-corporal">
         <p class="form-section-title">Examen físico — Estado general</p>
         <div class="form-group"><textarea id="hc-estado-general" placeholder="Descripción del estado general del paciente..."></textarea></div>
         <p class="form-section-title">Datos de semiología corporal</p>
@@ -1206,7 +1541,45 @@
         </div>
       </div>
 
-      <!-- PASO 4: PLAN DE TRATAMIENTO Y PAGOS -->
+      <!-- ══════════════════════════════════════════
+           PASO 3 — FACIAL/CAPILAR: PLAN DE TRATAMIENTO
+      ═══════════════════════════════════════════ -->
+      <div class="form-step" id="hc-step-3-plan">
+        <p class="form-section-title">Plan de tratamiento en consultorio</p>
+        <div class="tabla-wrap" style="margin-bottom:.75rem">
+          <table class="dash-table">
+            <thead><tr><th>Fecha</th><th>Procedimiento</th><th>Equipos</th><th>Tipo terapia</th><th>Firma</th><th></th></tr></thead>
+            <tbody id="tbody-hc-plan-consultorio-fc"></tbody>
+          </table>
+        </div>
+        <button class="btn-add-row" onclick="addFilaPlanConsultorioFC()">+ Agregar sesión</button>
+
+        <div class="form-group" style="margin-top:1rem"><label>Cosmecéuticos</label><textarea id="fc-cosme" placeholder="Productos recomendados..."></textarea></div>
+        <div class="form-group"><label>Observaciones</label><textarea id="fc-observaciones" placeholder="Notas del profesional..."></textarea></div>
+
+        <p class="form-section-title" style="margin-top:.5rem">Control de pagos</p>
+        <div class="com-grid-3">
+          <div class="form-group"><label>N° sesiones</label><input type="number" id="fc-num-sesiones" min="1" value="1"></div>
+          <div class="form-group"><label>Valor total ($)</label><input type="number" id="fc-valor-total" min="0" value="0" oninput="calcularSaldoFC()"></div>
+          <div class="form-group"><label>Abono inicial ($)</label><input type="number" id="fc-abono-nuevo" min="0" value="0" oninput="calcularSaldoFC()"></div>
+        </div>
+        <div class="com-grid-2">
+          <div class="form-group"><label>Saldo pendiente</label><input type="text" id="fc-saldo" readonly style="background:var(--rose-light);opacity:.8"></div>
+          <div class="form-group"></div>
+        </div>
+        <div class="com-grid-2">
+          <div class="form-group"><label>Firma del profesional</label><input type="text" id="fc-firma-prof" placeholder="Nombre del profesional"></div>
+          <div class="form-group"><label>Firma del paciente</label><input type="text" id="fc-firma-pac" placeholder="Nombre del paciente"></div>
+        </div>
+        <div class="step-nav">
+          <button class="btn-cancel" onclick="hcIrPaso(2)">← Anterior</button>
+          <button class="btn-guardar-registro" onclick="guardarHistoriaCorporal()">Guardar historia clínica</button>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════
+           PASO 4 — CORPORAL: PLAN DE TRATAMIENTO Y PAGOS
+      ═══════════════════════════════════════════ -->
       <div class="form-step" id="hc-step-4">
         <p class="form-section-title">Plan de tratamiento en consultorio</p>
         <div class="tabla-wrap" style="margin-bottom:.75rem">
@@ -1257,11 +1630,11 @@
     </div>
   </div>
 
-  <!-- MODAL VER DETALLE HISTORIA CORPORAL -->
+  <!-- MODAL VER DETALLE HISTORIA CLÍNICA -->
   <div class="modal-overlay" id="modal-ver-hc">
     <div class="modal-card modal-xl">
       <div class="modal-header">
-        <h3>Historia Clínica Corporal</h3>
+        <h3 id="modal-ver-hc-titulo">Historia Clínica</h3>
         <button class="modal-close" onclick="cerrarModal('modal-ver-hc')">✕</button>
       </div>
       <div id="modal-ver-hc-content"></div>

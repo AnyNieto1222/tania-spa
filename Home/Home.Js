@@ -210,6 +210,7 @@ function showTab(dash, tab, link) {
   if (dash === 'gerente' && tab === 'historia-corporal') renderTablaHistoriasCorporales();
   if (dash === 'esteticista' && tab === 'mis-comisiones') renderMisComisiones();
   if (dash === 'esteticista' && tab === 'hc-corporal') renderTablaHCEsteticista();
+  if (dash === 'esteticista' && tab === 'nuevo-registro') renderCitasHoyEsteticista();
 }
 
 // ============================================================
@@ -425,21 +426,39 @@ function renderSelectEsteticistas() {
 }
 
 async function agregarClienteGerente() {
-  const nombre      = document.getElementById('g-nombre').value.trim();
-  const tel         = document.getElementById('g-tel').value.trim();
-  const email       = document.getElementById('g-email').value.trim();
-  const alergias    = document.getElementById('g-alergias').value.trim() || 'Ninguna';
-  const esteticista = document.getElementById('g-esteticista').value;
+  const nombre       = document.getElementById('g-nombre').value.trim();
+  const tel          = document.getElementById('g-tel').value.trim();
+  const email        = document.getElementById('g-email').value.trim();
+  const alergias     = document.getElementById('g-alergias').value.trim() || 'Ninguna';
+  const esteticista  = document.getElementById('g-esteticista').value;
+  const citaFecha    = document.getElementById('g-cita-fecha').value;
+  const citaHora     = document.getElementById('g-cita-hora').value;
+  const citaServicio = document.getElementById('g-cita-servicio').value;
   if (!nombre || !tel) { showToast('⚠ Nombre y teléfono son obligatorios'); return; }
-  const nuevoCliente = { id: Date.now(), nombre, tel, email, alergias, tipo: 'nuevo', esteticista, visitas: 0, proximaCita: '', proxTrat: '' };
+  const nuevoCliente = {
+    id: Date.now(), nombre, tel, email, alergias, tipo: 'nuevo', esteticista, visitas: 0,
+    proximaCita: citaFecha || '', proxTrat: citaServicio || '',
+  };
   await fetch('/api/clientes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevoCliente) });
   state.clientes.push(nuevoCliente);
+  if (citaFecha && citaHora && citaServicio) {
+    const nuevaCita = {
+      id: Date.now() + 1, clienteNombre: nombre, clienteTel: tel, clienteEmail: email,
+      servicio: citaServicio, fecha: citaFecha, hora: citaHora, esteticista,
+      notas: '', estado: 'programada', clienteId: nuevoCliente.id,
+    };
+    await fetch('/api/citas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevaCita) });
+    state.citas.push(nuevaCita);
+    renderEstadosCitas();
+    renderTablaCitas();
+  }
   cerrarModal('modal-nuevo-cliente');
-  ['g-nombre','g-tel','g-email','g-alergias'].forEach(id => { document.getElementById(id).value = ''; });
+  ['g-nombre','g-tel','g-email','g-alergias','g-cita-fecha','g-cita-hora'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('g-cita-servicio').value = '';
   actualizarStatsGerente();
   renderTablaClientes();
   renderResumenNuevos();
-  showToast(`✦ Cliente "${nombre}" agregado`);
+  showToast(`✦ Cliente "${nombre}" agregado${citaFecha && citaHora ? ` · Cita el ${formatFecha(citaFecha)}` : ''}`);
 }
 
 async function agregarPersonal() {
@@ -928,6 +947,7 @@ function cargarEsteticista() {
   poblarSelectClientes();
   renderMisClientes();
   renderMiHistorial();
+  renderCitasHoyEsteticista();
 }
 
 function poblarSelectClientes() {
@@ -977,6 +997,114 @@ function toggleClienteNuevo() {
   const tipo = document.getElementById('tipo-cliente').value;
   document.getElementById('campos-cliente-nuevo').style.display  = tipo === 'nuevo'   ? 'block' : 'none';
   document.getElementById('grupo-select-cliente').style.display  = tipo === 'antiguo' ? 'block' : 'none';
+  const btn = document.getElementById('btn-paso1-siguiente');
+  if (!btn) return;
+  if (tipo === 'nuevo') {
+    btn.textContent = 'Programar Cita →';
+    btn.onclick = programarCitaNuevoCliente;
+  } else {
+    btn.textContent = 'Siguiente →';
+    btn.onclick = () => irPaso(2);
+  }
+}
+
+async function programarCitaNuevoCliente() {
+  const nombre   = document.getElementById('nuevo-nombre').value.trim();
+  const tel      = document.getElementById('nuevo-tel').value.trim();
+  const emailEl  = document.getElementById('nuevo-email');
+  const email    = emailEl ? emailEl.value.trim() : '';
+  const alergias = document.getElementById('nuevo-alergias').value.trim() || 'Ninguna';
+  const fecha    = document.getElementById('nuevo-cita-fecha').value;
+  const hora     = document.getElementById('nuevo-cita-hora').value;
+  const servicio = document.getElementById('nuevo-cita-servicio').value;
+  const miNombre = state.sesionActual ? state.sesionActual.nombre : 'Esteticista';
+
+  if (!nombre || !tel)              { showToast('⚠ Nombre y teléfono son obligatorios'); return; }
+  if (!fecha || !hora || !servicio) { showToast('⚠ Completa la fecha, hora y servicio de la cita'); return; }
+
+  const nuevoCliente = {
+    id: Date.now(), nombre, tel, email, alergias,
+    tipo: 'nuevo', esteticista: miNombre, visitas: 0,
+    proximaCita: fecha, proxTrat: servicio,
+  };
+  await fetch('/api/clientes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevoCliente) });
+  state.clientes.push(nuevoCliente);
+  poblarSelectClientes();
+
+  const nuevaCita = {
+    id: Date.now() + 1, clienteNombre: nombre, clienteTel: tel, clienteEmail: email,
+    servicio, fecha, hora, esteticista: miNombre,
+    notas: '', estado: 'programada', clienteId: nuevoCliente.id,
+  };
+  await fetch('/api/citas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevaCita) });
+  state.citas.push(nuevaCita);
+
+  ['nuevo-nombre','nuevo-tel','nuevo-email','nuevo-alergias','nuevo-cita-fecha','nuevo-cita-hora'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const servEl = document.getElementById('nuevo-cita-servicio');
+  if (servEl) servEl.value = '';
+
+  renderMisClientes();
+  renderCitasHoyEsteticista();
+  showToast(`✦ ${nombre} registrada · Cita el ${formatFecha(fecha)} a las ${hora}`);
+}
+
+function renderCitasHoyEsteticista() {
+  const cont = document.getElementById('citas-hoy-esteticista');
+  if (!cont) return;
+  const hoy      = new Date().toISOString().split('T')[0];
+  const miNombre = state.sesionActual ? state.sesionActual.nombre : '';
+  const citasHoy = state.citas.filter(c =>
+    c.fecha === hoy && c.esteticista === miNombre && c.estado === 'programada'
+  );
+  if (!citasHoy.length) { cont.innerHTML = ''; return; }
+  cont.innerHTML = `
+    <div class="citas-hoy-card">
+      <div class="citas-hoy-titulo">Citas para hoy (${citasHoy.length})</div>
+      <div class="citas-hoy-lista">
+        ${citasHoy.map(c => `
+          <div class="cita-hoy-item">
+            <div class="cita-hoy-info">
+              <strong>${c.clienteNombre}</strong>
+              <span class="cita-hoy-det">${c.hora} · ${c.servicio}</span>
+            </div>
+            <button class="btn-atender-cita" onclick="atenderCita(${c.id})">Atender →</button>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+async function atenderCita(citaId) {
+  const cita = state.citas.find(c => c.id === citaId);
+  if (!cita) return;
+  window.citaEnAtencion = citaId;
+
+  let cliente = state.clientes.find(c =>
+    (cita.clienteId && c.id === cita.clienteId) ||
+    c.nombre.toLowerCase() === cita.clienteNombre.toLowerCase()
+  );
+
+  if (!cliente) {
+    const nuevo = {
+      id: Date.now(), nombre: cita.clienteNombre, tel: cita.clienteTel || '',
+      email: cita.clienteEmail || '', alergias: 'Ninguna',
+      tipo: 'nuevo', esteticista: cita.esteticista, visitas: 0,
+      proximaCita: '', proxTrat: '',
+    };
+    await fetch('/api/clientes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevo) });
+    state.clientes.push(nuevo);
+    poblarSelectClientes();
+    cliente = nuevo;
+  }
+
+  document.getElementById('tipo-cliente').value = 'antiguo';
+  toggleClienteNuevo();
+  document.getElementById('select-cliente-reg').value = cliente.id;
+  document.getElementById('reg-tratamiento').value = cita.servicio;
+  document.getElementById('reg-fecha').value = cita.fecha;
+  cambiarFormTratamiento();
+  irPaso(2);
 }
 
 async function guardarRegistro() {
@@ -1045,6 +1173,16 @@ async function guardarRegistro() {
 
   renderMisClientes();
   renderMiHistorial();
+  if (window.citaEnAtencion) {
+    const citaAtendida = state.citas.find(c => c.id === window.citaEnAtencion);
+    if (citaAtendida) {
+      citaAtendida.estado = 'completada';
+      await fetch(`/api/citas/${citaAtendida.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(citaAtendida) });
+    }
+    window.citaEnAtencion = null;
+    renderCitasHoyEsteticista();
+    renderEstadosCitas();
+  }
   showToast(`✦ Registro guardado para ${clienteNombre}`);
   showTab('esteticista', 'mi-historial', document.querySelectorAll('#dash-esteticista .nav-item')[2]);
 }
@@ -1379,7 +1517,26 @@ function editarCita(id) {
   document.getElementById('edit-cita-notas').value       = cita.notas || '';
   poblarSelectsEsteticistaCita('edit-cita-esteticista');
   document.getElementById('edit-cita-esteticista').value = cita.esteticista;
+  const btnReg = document.getElementById('btn-registrar-desde-cita');
+  if (btnReg) btnReg.style.display = cita.estado === 'programada' ? 'inline-flex' : 'none';
   abrirModal('modal-editar-cita');
+}
+
+async function iniciarRegistroDesdeCita() {
+  const id = parseInt(document.getElementById('edit-cita-id').value);
+  cerrarModal('modal-editar-cita');
+  const esEsteticista = state.sesionActual && state.sesionActual.rol === 'esteticista';
+  if (esEsteticista) {
+    await atenderCita(id);
+  } else {
+    const cita = state.citas.find(c => c.id === id);
+    if (!cita) return;
+    if (!confirm(`¿Registrar tratamiento para ${cita.clienteNombre}?\nEsto abrirá el formulario de la esteticista.`)) return;
+    document.getElementById('dash-gerente').classList.remove('active');
+    document.getElementById('dash-esteticista').classList.add('active');
+    showTab('esteticista', 'nuevo-registro', document.querySelectorAll('#dash-esteticista .nav-item')[1]);
+    await atenderCita(id);
+  }
 }
 
 async function actualizarCita() {
@@ -1943,16 +2100,67 @@ function renderMisComisiones() {
 //  MÓDULO HISTORIA CLÍNICA CORPORAL
 // ============================================================
 
-let filasPlanConsultorio = [];
+let filasPlanConsultorio   = [];
+let filasPlanConsultorioFC = [];
 let hcEditandoId = null;
+window.hcTipoActual = 'corporal';
+
+// ── poblar select de clientes para paso 0 ──────────────────────
+function hcPoblarSelectClientes() {
+  const sel = document.getElementById('hc-select-cliente');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">-- Elige un cliente --</option>' +
+    state.clientes.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+}
+
+function hcSeleccionarTipo() {
+  const tipo = document.querySelector('input[name="hc-tipo-radio"]:checked')?.value || 'corporal';
+  window.hcTipoActual = tipo;
+  ['corporal','facial'].forEach(t => {
+    const card = document.getElementById(`hc-card-${t}`);
+    if (card) card.classList.toggle('selected', t === tipo);
+  });
+}
+
+function hcToggleCliente() {
+  const tipo = document.getElementById('hc-tipo-cliente').value;
+  document.getElementById('hc-campos-cliente-nuevo').style.display  = tipo === 'nuevo'   ? 'block' : 'none';
+  document.getElementById('hc-grupo-select-cliente').style.display  = tipo === 'antiguo' ? 'block' : 'none';
+}
+
+async function hcContinuarPaso0() {
+  const tipoCliente = document.getElementById('hc-tipo-cliente').value;
+  if (tipoCliente === 'antiguo') {
+    const selId = document.getElementById('hc-select-cliente').value;
+    if (!selId) { showToast('⚠ Selecciona un cliente para continuar'); return; }
+    const cliente = state.clientes.find(c => String(c.id) === String(selId));
+    if (cliente) {
+      const set = (elId, val) => { const e = document.getElementById(elId); if (e && val !== undefined && val !== null) e.value = val; };
+      set('hc-nombre',  cliente.nombre);
+      set('hc-celular', cliente.tel);
+      set('hc-email',   cliente.email || '');
+    }
+  } else {
+    const nombre = document.getElementById('hc-nuevo-nombre').value.trim();
+    const tel    = document.getElementById('hc-nuevo-tel').value.trim();
+    if (!nombre || !tel) { showToast('⚠ Nombre y teléfono son obligatorios para el nuevo cliente'); return; }
+    document.getElementById('hc-nombre').value  = nombre;
+    document.getElementById('hc-celular').value = tel;
+    document.getElementById('hc-email').value   = document.getElementById('hc-nuevo-email').value.trim();
+  }
+  hcIrPaso(1);
+}
 
 function abrirModalHistoriaCorporal(id = null) {
   hcEditandoId = id;
-  filasPlanConsultorio = [];
-  hcIrPaso(1);
-  document.getElementById('modal-hc-titulo').textContent = id ? 'Editar Historia Corporal' : 'Nueva Historia Clínica Corporal';
+  filasPlanConsultorio   = [];
+  filasPlanConsultorioFC = [];
+  window.hcTipoActual    = 'corporal';
+
+  document.getElementById('modal-hc-titulo').textContent = id ? 'Editar Historia Clínica' : 'Nueva Historia Clínica';
   document.getElementById('hc-id').value = id || '';
 
+  // Limpiar todos los campos
   const campos = ['hc-nombre','hc-cedula','hc-fecha-nac','hc-edad','hc-genero','hc-estado-civil',
     'hc-eps','hc-rh','hc-celular','hc-direccion','hc-ocupacion','hc-email',
     'hc-cont-nombre','hc-cont-parentesco','hc-cont-cel','hc-cont-dir','hc-motivo',
@@ -1963,18 +2171,37 @@ function abrirModalHistoriaCorporal(id = null) {
     'med-supra-iliaco','med-adipo-total','med-abdomen-bajo','med-cadera','med-muslo-alto',
     'med-muslo-medio','med-derrier','med-caida','med-volumen','med-total',
     'hc-cosme','hc-aliment','hc-activ-casa','hc-otros-casa','hc-trat-desc','hc-num-sesiones',
-    'hc-valor-total','hc-abono-nuevo','hc-saldo','hc-observaciones','hc-firma-prof','hc-firma-pac'];
+    'hc-valor-total','hc-abono-nuevo','hc-saldo','hc-observaciones','hc-firma-prof','hc-firma-pac',
+    'hc-nuevo-nombre','hc-nuevo-tel','hc-nuevo-email','hc-nuevo-alergias',
+    'fc-antecedentes','fc-tratamientos-previos','fc-alergias-meds','fc-cosme','fc-observaciones',
+    'fc-num-sesiones','fc-valor-total','fc-abono-nuevo','fc-saldo','fc-firma-prof','fc-firma-pac',
+  ];
   campos.forEach(c => { const el = document.getElementById(c); if (el) el.value = ''; });
+
   document.querySelectorAll('input[name^="antec-"]').forEach(r => { if (r.value === 'no') r.checked = true; });
   document.querySelectorAll('input[name="hc-sistemas"]').forEach(c => c.checked = false);
-  document.getElementById('hc-partos').value = 0;
-  document.getElementById('hc-num-sesiones').value = 1;
-  document.getElementById('hc-valor-total').value = 0;
-  document.getElementById('hc-abono-nuevo').value = 0;
+  document.querySelectorAll('input[name^="fc-"]').forEach(c => { if (c.type === 'checkbox') c.checked = false; });
+
+  const setDef = (id, v) => { const e = document.getElementById(id); if (e) e.value = v; };
+  setDef('hc-partos', 0); setDef('hc-num-sesiones', 1);
+  setDef('hc-valor-total', 0); setDef('hc-abono-nuevo', 0);
+  setDef('fc-num-sesiones', 1); setDef('fc-valor-total', 0); setDef('fc-abono-nuevo', 0);
+
+  // Resetear radio de tipo
+  const radioCorporal = document.querySelector('input[name="hc-tipo-radio"][value="corporal"]');
+  if (radioCorporal) { radioCorporal.checked = true; hcSeleccionarTipo(); }
+
+  hcPoblarSelectClientes();
 
   if (id) {
     const h = state.historiasCorporales.find(x => x.id === id);
     if (!h) return;
+    window.hcTipoActual = h.tipo || 'corporal';
+
+    // Marcar tipo correcto
+    const radioTipo = document.querySelector(`input[name="hc-tipo-radio"][value="${window.hcTipoActual}"]`);
+    if (radioTipo) { radioTipo.checked = true; hcSeleccionarTipo(); }
+
     const set = (elId, val) => { const e = document.getElementById(elId); if (e && val !== undefined && val !== null) e.value = val; };
     set('hc-nombre', h.nombre); set('hc-cedula', h.cedula);
     set('hc-fecha-nac', h.fechaNacimiento); set('hc-edad', h.edad);
@@ -1984,52 +2211,125 @@ function abrirModalHistoriaCorporal(id = null) {
     set('hc-cont-nombre', h.contactoNombre); set('hc-cont-parentesco', h.contactoParentesco);
     set('hc-cont-cel', h.contactoCelular); set('hc-cont-dir', h.contactoDireccion);
     set('hc-motivo', h.motivoConsulta);
-    const ant = h.antecedentes || {};
-    ['derm','pato','est','alerg','tabaco','alcohol'].forEach(k => {
-      const r = document.querySelector(`input[name="antec-${k}"][value="${ant[k] || 'no'}"]`);
-      if (r) r.checked = true;
-      const desc = document.getElementById(`antec-${k}-desc`);
-      if (desc) desc.value = ant[`${k}Desc`] || '';
-    });
-    ['medicamentos','suplementos','cosmetologicos','liquido'].forEach(k => set(`antec-${k}`, ant[k] || ''));
-    const hab = h.habitos || {};
-    set('hc-fur', hab.fur); set('hc-partos', hab.partos || 0); set('hc-planificacion', hab.planificacion);
-    set('hc-actividad', hab.actividad); set('hc-estado-nervioso', hab.estadoNervioso);
-    set('hc-hora-despertar', hab.horaDespertar); set('hc-hora-dormir', hab.horaDormir);
-    (hab.sistemas || []).forEach(v => { const c = document.querySelector(`input[name="hc-sistemas"][value="${v}"]`); if (c) c.checked = true; });
-    const exam = h.examenFisico || {};
-    set('hc-estado-general', exam.estadoGeneral);
-    const sem = h.semiologia || {};
-    ['peso','estatura','imc','imc-ideal','calorias','edad-metabolica','grasa-total','musculo-total','grasa-visceral'].forEach(k => set(`hc-${k.replace('-','_').replace('-','_')}`, sem[k.replace(/-/g,'')]));
-    set('hc-peso', sem.peso); set('hc-estatura', sem.estatura); set('hc-imc', sem.imc);
-    set('hc-imc-ideal', sem.imcIdeal); set('hc-calorias', sem.calorias);
-    set('hc-edad-metabolica', sem.edadMetabolica); set('hc-grasa-total', sem.grasaTotal);
-    set('hc-musculo-total', sem.musculoTotal); set('hc-grasa-visceral', sem.grasaVisceral);
-    const med = h.mediciones || {};
-    Object.entries(med).forEach(([k, v]) => set(`med-${k}`, v));
-    filasPlanConsultorio = (h.planConsultorio || []).map(x => ({ ...x }));
-    const planC = h.planCasa || {};
-    set('hc-cosme', planC.cosme); set('hc-aliment', planC.aliment);
-    set('hc-activ-casa', planC.activCasa); set('hc-otros-casa', planC.otrosCasa);
-    set('hc-trat-desc', h.tratamientoDescripcion); set('hc-num-sesiones', h.numSesiones);
-    set('hc-valor-total', h.valorTotal); set('hc-saldo', formatCOP(h.saldoPendiente));
-    set('hc-observaciones', h.observaciones);
-    set('hc-firma-prof', h.firmaProfesional); set('hc-firma-pac', h.firmaPaciente);
+
+    if (window.hcTipoActual === 'corporal') {
+      const ant = h.antecedentes || {};
+      ['derm','pato','est','alerg','tabaco','alcohol'].forEach(k => {
+        const r = document.querySelector(`input[name="antec-${k}"][value="${ant[k] || 'no'}"]`);
+        if (r) r.checked = true;
+        const desc = document.getElementById(`antec-${k}-desc`);
+        if (desc) desc.value = ant[`${k}Desc`] || '';
+      });
+      ['medicamentos','suplementos','cosmetologicos','liquido'].forEach(k => set(`antec-${k}`, ant[k] || ''));
+      const hab = h.habitos || {};
+      set('hc-fur', hab.fur); set('hc-partos', hab.partos || 0); set('hc-planificacion', hab.planificacion);
+      set('hc-actividad', hab.actividad); set('hc-estado-nervioso', hab.estadoNervioso);
+      set('hc-hora-despertar', hab.horaDespertar); set('hc-hora-dormir', hab.horaDormir);
+      (hab.sistemas || []).forEach(v => { const c = document.querySelector(`input[name="hc-sistemas"][value="${v}"]`); if (c) c.checked = true; });
+      const exam = h.examenFisico || {};
+      set('hc-estado-general', exam.estadoGeneral);
+      const sem = h.semiologia || {};
+      set('hc-peso', sem.peso); set('hc-estatura', sem.estatura); set('hc-imc', sem.imc);
+      set('hc-imc-ideal', sem.imcIdeal); set('hc-calorias', sem.calorias);
+      set('hc-edad-metabolica', sem.edadMetabolica); set('hc-grasa-total', sem.grasaTotal);
+      set('hc-musculo-total', sem.musculoTotal); set('hc-grasa-visceral', sem.grasaVisceral);
+      const med = h.mediciones || {};
+      Object.entries(med).forEach(([k, v]) => set(`med-${k}`, v));
+      filasPlanConsultorio = (h.planConsultorio || []).map(x => ({ ...x }));
+      const planC = h.planCasa || {};
+      set('hc-cosme', planC.cosme); set('hc-aliment', planC.aliment);
+      set('hc-activ-casa', planC.activCasa); set('hc-otros-casa', planC.otrosCasa);
+      set('hc-trat-desc', h.tratamientoDescripcion); set('hc-num-sesiones', h.numSesiones);
+      set('hc-valor-total', h.valorTotal); set('hc-saldo', formatCOP(h.saldoPendiente));
+      set('hc-observaciones', h.observaciones);
+      set('hc-firma-prof', h.firmaProfesional); set('hc-firma-pac', h.firmaPaciente);
+    } else if (window.hcTipoActual === 'facial') {
+      const df = h.datosFacial || {};
+      set('fc-tipo-piel', df.tipoPiel); set('fc-fototipo', df.fototipo);
+      (df.estadoPiel || []).forEach(v => { const c = document.querySelector(`input[name="fc-estado-piel"][value="${v}"]`); if (c) c.checked = true; });
+      (df.patologias || []).forEach(v => { const c = document.querySelector(`input[name="fc-patologias"][value="${v}"]`); if (c) c.checked = true; });
+      set('fc-antecedentes', df.antecedentes); set('fc-tratamientos-previos', df.tratamientosPrevios);
+      set('fc-alergias-meds', df.alergiasMeds);
+      filasPlanConsultorioFC = (h.planConsultorio || []).map(x => ({ ...x }));
+      set('fc-cosme', df.cosme); set('fc-observaciones', df.observaciones);
+      set('fc-num-sesiones', h.numSesiones); set('fc-valor-total', h.valorTotal);
+      set('fc-saldo', formatCOP(h.saldoPendiente));
+      set('fc-firma-prof', h.firmaProfesional); set('fc-firma-pac', h.firmaPaciente);
+    }
+
+    // Al editar: saltar paso 0
+    hcIrPaso(1, true);
+  } else {
+    hcIrPaso(0);
   }
+
   renderFilasPlanConsultorio();
+  renderFilasPlanConsultorioFC();
   calcularSaldoHC();
+  calcularSaldoFC();
   abrirModal('modal-historia-corporal');
 }
 
-function hcIrPaso(n) {
-  for (let i = 1; i <= 4; i++) {
-    const step = document.getElementById(`hc-step-${i}`);
+function hcIrPaso(n, esEdicion = false) {
+  const tipo = window.hcTipoActual || 'corporal';
+  const maxPaso = tipo === 'corporal' ? 4 : 3;
+
+  // Actualizar indicador de pasos
+  const totalIndicadores = tipo === 'corporal' ? 5 : 4; // 0..4 o 0..3
+  for (let i = 0; i <= 4; i++) {
     const ind  = document.getElementById(`hc-step-ind-${i}`);
     const conn = document.getElementById(`hc-conn-${i}`);
-    if (step) step.classList.toggle('active', i === n);
-    if (ind)  { ind.classList.toggle('active', i === n); ind.classList.toggle('done', i < n); }
-    if (conn) conn.classList.toggle('done', i < n);
+    if (ind) {
+      const visible = (tipo === 'corporal') ? (i <= 4) : (i <= 3);
+      ind.style.display  = visible ? '' : 'none';
+      ind.classList.toggle('active', i === n);
+      ind.classList.toggle('done',   i < n);
+    }
+    if (conn) {
+      const visible = (tipo === 'corporal') ? (i <= 3) : (i <= 2);
+      conn.style.display = visible ? '' : 'none';
+      conn.classList.toggle('done', i < n);
+    }
   }
+
+  // Actualizar etiquetas dinámicas
+  const lbl2 = document.getElementById('hc-label-paso2');
+  const lbl3 = document.getElementById('hc-label-paso3');
+  if (tipo === 'corporal') {
+    if (lbl2) lbl2.textContent = 'Antecedentes';
+    if (lbl3) lbl3.textContent = 'Semiología';
+  } else if (tipo === 'facial') {
+    if (lbl2) lbl2.textContent = 'Análisis Facial';
+    if (lbl3) lbl3.textContent = 'Plan Tratamiento';
+  }
+
+  // Ocultar todos los pasos
+  const allSteps = ['hc-step-0','hc-step-1',
+    'hc-step-2-corporal','hc-step-2-facial',
+    'hc-step-3-corporal','hc-step-3-plan','hc-step-4'];
+  allSteps.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+
+  // Mostrar paso correcto
+  if (n === 0) {
+    document.getElementById('hc-step-0')?.classList.add('active');
+  } else if (n === 1) {
+    document.getElementById('hc-step-1')?.classList.add('active');
+    const btnAnt = document.getElementById('hc-btn-1-ant');
+    if (btnAnt) btnAnt.style.display = esEdicion ? 'none' : '';
+  } else if (n === 2) {
+    if (tipo === 'corporal')    document.getElementById('hc-step-2-corporal')?.classList.add('active');
+    else                        document.getElementById('hc-step-2-facial')?.classList.add('active');
+  } else if (n === 3) {
+    if (tipo === 'corporal')      document.getElementById('hc-step-3-corporal')?.classList.add('active');
+    else                          document.getElementById('hc-step-3-plan')?.classList.add('active');
+  } else if (n === 4) {
+    document.getElementById('hc-step-4')?.classList.add('active');
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function calcularEdadHC() {
@@ -2058,6 +2358,16 @@ function calcularSaldoHC() {
   document.getElementById('hc-saldo').value = formatCOP(saldo);
 }
 
+function calcularSaldoFC() {
+  const el1 = document.getElementById('fc-valor-total');
+  const el2 = document.getElementById('fc-abono-nuevo');
+  const el3 = document.getElementById('fc-saldo');
+  if (!el1 || !el2 || !el3) return;
+  const total = parseFloat(el1.value) || 0;
+  const abono = parseFloat(el2.value) || 0;
+  el3.value = formatCOP(Math.max(0, total - abono));
+}
+
 function addFilaPlanConsultorio() {
   filasPlanConsultorio.push({ fecha: '', procedimiento: '', equipos: '', tipoTerapia: '', firma: '' });
   renderFilasPlanConsultorio();
@@ -2080,6 +2390,29 @@ function renderFilasPlanConsultorio() {
 function updateFilaPlan(i, campo, valor) { filasPlanConsultorio[i][campo] = valor; }
 function eliminarFilaPlan(i) { filasPlanConsultorio.splice(i, 1); renderFilasPlanConsultorio(); }
 
+// ── Tabla dinámica para plan de Facial ───────────────
+function addFilaPlanConsultorioFC() {
+  filasPlanConsultorioFC.push({ fecha: '', procedimiento: '', equipos: '', tipoTerapia: '', firma: '' });
+  renderFilasPlanConsultorioFC();
+}
+
+function renderFilasPlanConsultorioFC() {
+  const tbody = document.getElementById('tbody-hc-plan-consultorio-fc');
+  if (!tbody) return;
+  tbody.innerHTML = filasPlanConsultorioFC.map((f, i) => `
+    <tr>
+      <td><input type="date" class="td-input" value="${f.fecha}" onchange="updateFilaPlanFC(${i},'fecha',this.value)"></td>
+      <td><input type="text" class="td-input" value="${f.procedimiento}" placeholder="Procedimiento" onchange="updateFilaPlanFC(${i},'procedimiento',this.value)"></td>
+      <td><input type="text" class="td-input" value="${f.equipos}" placeholder="Equipos" onchange="updateFilaPlanFC(${i},'equipos',this.value)"></td>
+      <td><input type="text" class="td-input" value="${f.tipoTerapia}" placeholder="Tipo terapia" onchange="updateFilaPlanFC(${i},'tipoTerapia',this.value)"></td>
+      <td><input type="text" class="td-input" value="${f.firma}" placeholder="Firma" onchange="updateFilaPlanFC(${i},'firma',this.value)"></td>
+      <td><button class="btn-accion btn-cancelar" onclick="eliminarFilaPlanFC(${i})" title="Eliminar">✕</button></td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text-soft);padding:.75rem;font-size:.8rem">Sin sesiones aún</td></tr>';
+}
+
+function updateFilaPlanFC(i, campo, valor) { filasPlanConsultorioFC[i][campo] = valor; }
+function eliminarFilaPlanFC(i) { filasPlanConsultorioFC.splice(i, 1); renderFilasPlanConsultorioFC(); }
+
 function leerAntecedentes() {
   const get = k => document.querySelector(`input[name="antec-${k}"]:checked`)?.value || 'no';
   const desc = k => document.getElementById(`antec-${k}-desc`)?.value || '';
@@ -2096,35 +2429,64 @@ function leerAntecedentes() {
   };
 }
 
+function leerDatosFacial() {
+  return {
+    tipoPiel:            gVal('fc-tipo-piel'),
+    fototipo:            gVal('fc-fototipo'),
+    estadoPiel:          [...document.querySelectorAll('input[name="fc-estado-piel"]:checked')].map(c => c.value),
+    patologias:          [...document.querySelectorAll('input[name="fc-patologias"]:checked')].map(c => c.value),
+    antecedentes:        gVal('fc-antecedentes'),
+    tratamientosPrevios: gVal('fc-tratamientos-previos'),
+    alergiasMeds:        gVal('fc-alergias-meds'),
+    cosme:               gVal('fc-cosme'),
+    observaciones:       gVal('fc-observaciones'),
+  };
+}
+
+
 async function guardarHistoriaCorporal() {
   const nombre  = document.getElementById('hc-nombre').value.trim();
   const cedula  = document.getElementById('hc-cedula').value.trim();
   const celular = document.getElementById('hc-celular').value.trim();
   if (!nombre || !cedula || !celular) { showToast('⚠ Nombre, cédula y celular son obligatorios'); return; }
 
-  const valorTotal = parseFloat(document.getElementById('hc-valor-total').value) || 0;
-  const abono      = parseFloat(document.getElementById('hc-abono-nuevo').value) || 0;
-  const saldoPendiente = Math.max(0, valorTotal - abono);
+  const tipo = window.hcTipoActual || 'corporal';
 
-  const payload = {
-    nombre, cedula,
-    fechaNacimiento: document.getElementById('hc-fecha-nac').value,
-    edad: parseInt(document.getElementById('hc-edad').value) || 0,
-    genero: document.getElementById('hc-genero').value,
-    estadoCivil: document.getElementById('hc-estado-civil').value,
-    eps: document.getElementById('hc-eps').value,
-    rh: document.getElementById('hc-rh').value,
-    celular,
-    direccion: document.getElementById('hc-direccion').value,
-    ocupacion: document.getElementById('hc-ocupacion').value,
-    email: document.getElementById('hc-email').value,
-    contactoNombre: document.getElementById('hc-cont-nombre').value,
-    contactoParentesco: document.getElementById('hc-cont-parentesco').value,
-    contactoCelular: document.getElementById('hc-cont-cel').value,
-    contactoDireccion: document.getElementById('hc-cont-dir').value,
-    motivoConsulta: document.getElementById('hc-motivo').value,
-    antecedentes: leerAntecedentes(),
-    habitos: {
+  // Si cliente nuevo: crear en la BD primero
+  const tipoCliente = document.getElementById('hc-tipo-cliente')?.value || 'antiguo';
+  if (!hcEditandoId && tipoCliente === 'nuevo') {
+    const nuevoNombre   = document.getElementById('hc-nuevo-nombre').value.trim();
+    const nuevoTel      = document.getElementById('hc-nuevo-tel').value.trim();
+    const nuevoEmail    = document.getElementById('hc-nuevo-email').value.trim();
+    const nuevoAlergias = document.getElementById('hc-nuevo-alergias').value.trim() || 'Ninguna';
+    if (nuevoNombre && nuevoTel) {
+      const nuevoCliente = {
+        id: Date.now(), nombre: nuevoNombre, tel: nuevoTel, email: nuevoEmail,
+        alergias: nuevoAlergias, tipo: 'nuevo',
+        esteticista: state.sesionActual?.nombre || '', visitas: 0, proximaCita: '', proxTrat: '',
+      };
+      await fetch('/api/clientes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nuevoCliente) });
+      state.clientes.push(nuevoCliente);
+    }
+  }
+
+  let valorTotal, abono, saldoPendiente, numSesiones, planConsultorio, observaciones, firmaProfesional, firmaPaciente;
+  let datosFacial = {};
+  let antecedentes = {}, habitos = {}, examenFisico = {}, semiologia = {}, mediciones = {}, planCasa = {};
+  let tratamientoDescripcion = '';
+
+  if (tipo === 'corporal') {
+    valorTotal = parseFloat(document.getElementById('hc-valor-total').value) || 0;
+    abono      = parseFloat(document.getElementById('hc-abono-nuevo').value) || 0;
+    saldoPendiente = Math.max(0, valorTotal - abono);
+    numSesiones = parseInt(document.getElementById('hc-num-sesiones').value) || 0;
+    planConsultorio = filasPlanConsultorio;
+    tratamientoDescripcion = document.getElementById('hc-trat-desc').value;
+    observaciones    = document.getElementById('hc-observaciones').value;
+    firmaProfesional = document.getElementById('hc-firma-prof').value;
+    firmaPaciente    = document.getElementById('hc-firma-pac').value;
+    antecedentes = leerAntecedentes();
+    habitos = {
       fur: document.getElementById('hc-fur').value,
       partos: parseInt(document.getElementById('hc-partos').value) || 0,
       planificacion: document.getElementById('hc-planificacion').value,
@@ -2133,9 +2495,9 @@ async function guardarHistoriaCorporal() {
       horaDespertar: document.getElementById('hc-hora-despertar').value,
       horaDormir: document.getElementById('hc-hora-dormir').value,
       sistemas: [...document.querySelectorAll('input[name="hc-sistemas"]:checked')].map(c => c.value),
-    },
-    examenFisico: { estadoGeneral: document.getElementById('hc-estado-general').value },
-    semiologia: {
+    };
+    examenFisico = { estadoGeneral: document.getElementById('hc-estado-general').value };
+    semiologia = {
       peso: document.getElementById('hc-peso').value,
       estatura: document.getElementById('hc-estatura').value,
       imc: document.getElementById('hc-imc').value,
@@ -2145,35 +2507,69 @@ async function guardarHistoriaCorporal() {
       grasaTotal: document.getElementById('hc-grasa-total').value,
       musculoTotal: document.getElementById('hc-musculo-total').value,
       grasaVisceral: document.getElementById('hc-grasa-visceral').value,
-    },
-    mediciones: {
+    };
+    mediciones = {
       'espalda-alta': document.getElementById('med-espalda-alta').value,
       'espalda-baja': document.getElementById('med-espalda-baja').value,
       'supra-iliaco': document.getElementById('med-supra-iliaco').value,
-      'adipo-total': document.getElementById('med-adipo-total').value,
+      'adipo-total':  document.getElementById('med-adipo-total').value,
       'abdomen-bajo': document.getElementById('med-abdomen-bajo').value,
-      cadera: document.getElementById('med-cadera').value,
-      'muslo-alto': document.getElementById('med-muslo-alto').value,
-      'muslo-medio': document.getElementById('med-muslo-medio').value,
+      cadera:         document.getElementById('med-cadera').value,
+      'muslo-alto':   document.getElementById('med-muslo-alto').value,
+      'muslo-medio':  document.getElementById('med-muslo-medio').value,
       derrier: document.getElementById('med-derrier').value,
-      caida: document.getElementById('med-caida').value,
+      caida:   document.getElementById('med-caida').value,
       volumen: document.getElementById('med-volumen').value,
-      total: document.getElementById('med-total').value,
-    },
-    planConsultorio: filasPlanConsultorio,
-    planCasa: {
-      cosme: document.getElementById('hc-cosme').value,
-      aliment: document.getElementById('hc-aliment').value,
-      activCasa: document.getElementById('hc-activ-casa').value,
-      otrosCasa: document.getElementById('hc-otros-casa').value,
-    },
-    tratamientoDescripcion: document.getElementById('hc-trat-desc').value,
-    numSesiones: parseInt(document.getElementById('hc-num-sesiones').value) || 0,
-    valorTotal, abonos: abono > 0 ? [{ monto: abono, fecha: new Date().toISOString().slice(0, 10) }] : [],
+      total:   document.getElementById('med-total').value,
+    };
+    planCasa = {
+      cosme:      document.getElementById('hc-cosme').value,
+      aliment:    document.getElementById('hc-aliment').value,
+      activCasa:  document.getElementById('hc-activ-casa').value,
+      otrosCasa:  document.getElementById('hc-otros-casa').value,
+    };
+  } else {
+    // Facial
+    valorTotal = parseFloat(document.getElementById('fc-valor-total').value) || 0;
+    abono      = parseFloat(document.getElementById('fc-abono-nuevo').value) || 0;
+    saldoPendiente = Math.max(0, valorTotal - abono);
+    numSesiones = parseInt(document.getElementById('fc-num-sesiones').value) || 0;
+    planConsultorio = filasPlanConsultorioFC;
+    observaciones    = document.getElementById('fc-observaciones').value;
+    firmaProfesional = document.getElementById('fc-firma-prof').value;
+    firmaPaciente    = document.getElementById('fc-firma-pac').value;
+    if (tipo === 'facial')  datosFacial = leerDatosFacial();
+  }
+
+  const payload = {
+    nombre, cedula,
+    fechaNacimiento:    document.getElementById('hc-fecha-nac').value,
+    edad:               parseInt(document.getElementById('hc-edad').value) || 0,
+    genero:             document.getElementById('hc-genero').value,
+    estadoCivil:        document.getElementById('hc-estado-civil').value,
+    eps:                document.getElementById('hc-eps').value,
+    rh:                 document.getElementById('hc-rh').value,
+    celular,
+    direccion:          document.getElementById('hc-direccion').value,
+    ocupacion:          document.getElementById('hc-ocupacion').value,
+    email:              document.getElementById('hc-email').value,
+    contactoNombre:     document.getElementById('hc-cont-nombre').value,
+    contactoParentesco: document.getElementById('hc-cont-parentesco').value,
+    contactoCelular:    document.getElementById('hc-cont-cel').value,
+    contactoDireccion:  document.getElementById('hc-cont-dir').value,
+    motivoConsulta:     document.getElementById('hc-motivo').value,
+    tipo,
+    antecedentes, habitos, examenFisico, semiologia, mediciones, planCasa,
+    planConsultorio,
+    tratamientoDescripcion,
+    numSesiones,
+    valorTotal,
+    abonos: abono > 0 && !hcEditandoId ? [{ monto: abono, fecha: new Date().toISOString().slice(0, 10) }] : [],
     saldoPendiente,
-    observaciones: document.getElementById('hc-observaciones').value,
-    firmaProfesional: document.getElementById('hc-firma-prof').value,
-    firmaPaciente: document.getElementById('hc-firma-pac').value,
+    observaciones,
+    firmaProfesional,
+    firmaPaciente,
+    datosFacial,
     esteticista: state.sesionActual?.nombre || '',
   };
 
@@ -2196,6 +2592,14 @@ async function guardarHistoriaCorporal() {
   renderTablaHCEsteticista();
 }
 
+function badgeHCTipo(tipo) {
+  const map = {
+    corporal: '<span class="badge-hc-corporal">Corporal</span>',
+    facial:   '<span class="badge-hc-facial">Facial</span>',
+  };
+  return map[tipo] || map.corporal;
+}
+
 function renderTablaHistoriasCorporales(filtro = '') {
   const tbody = document.getElementById('tbody-historias-corporales');
   if (!tbody) return;
@@ -2204,6 +2608,7 @@ function renderTablaHistoriasCorporales(filtro = '') {
   tbody.innerHTML = lista.length ? lista.map(h => `
     <tr>
       <td><strong>${h.nombre}</strong></td>
+      <td>${badgeHCTipo(h.tipo)}</td>
       <td>${h.cedula}</td>
       <td>${h.edad || '—'}</td>
       <td>${h.celular}</td>
@@ -2220,7 +2625,7 @@ function renderTablaHistoriasCorporales(filtro = '') {
         </div>
       </td>
     </tr>`).join('')
-    : '<tr><td colspan="10" style="text-align:center;color:var(--text-soft);padding:1.5rem">Sin historias clínicas registradas</td></tr>';
+    : '<tr><td colspan="11" style="text-align:center;color:var(--text-soft);padding:1.5rem">Sin historias clínicas registradas</td></tr>';
 }
 
 function filtrarHistoriasCorporales(v) {
@@ -2237,6 +2642,7 @@ function renderTablaHCEsteticista(filtro = '') {
   tbody.innerHTML = lista.length ? [...lista].reverse().map(h => `
     <tr>
       <td><strong>${h.nombre}</strong></td>
+      <td>${badgeHCTipo(h.tipo)}</td>
       <td>${h.cedula}</td>
       <td>${h.edad || '—'}</td>
       <td>${h.celular}</td>
@@ -2250,46 +2656,66 @@ function renderTablaHCEsteticista(filtro = '') {
         </div>
       </td>
     </tr>`).join('')
-    : '<tr><td colspan="8" style="text-align:center;color:var(--text-soft);padding:1.5rem">Sin historias clínicas aún</td></tr>';
+    : '<tr><td colspan="9" style="text-align:center;color:var(--text-soft);padding:1.5rem">Sin historias clínicas aún</td></tr>';
 }
 
 function verHistoriaCorporal(id) {
   const h = state.historiasCorporales.find(x => x.id === id);
   if (!h) return;
-  const s = h.semiologia || {};
-  const m = h.mediciones || {};
-  const ant = h.antecedentes || {};
-  const hab = h.habitos || {};
-  const plan = (h.planConsultorio || []);
-  const planC = h.planCasa || {};
-  document.getElementById('modal-ver-hc-content').innerHTML = `
-    <div class="hc-view-section"><h4>Datos del paciente</h4>
-      <div class="hc-view-grid">
-        <div><label>Nombre</label><p>${h.nombre}</p></div><div><label>Cédula</label><p>${h.cedula}</p></div>
-        <div><label>Edad</label><p>${h.edad || '—'}</p></div><div><label>Género</label><p>${h.genero || '—'}</p></div>
-        <div><label>EPS</label><p>${h.eps || '—'}</p></div><div><label>RH</label><p>${h.rh || '—'}</p></div>
-        <div><label>Celular</label><p>${h.celular}</p></div><div><label>Email</label><p>${h.email || '—'}</p></div>
-      </div>
-    </div>
-    <div class="hc-view-section"><h4>Semiología corporal</h4>
+  const tipo  = h.tipo || 'corporal';
+  const plan  = (h.planConsultorio || []);
+  const tipoLabel = { corporal: 'Corporal', facial: 'Facial' }[tipo] || tipo;
+
+  const titModal = document.getElementById('modal-ver-hc-titulo');
+  if (titModal) titModal.textContent = `Historia Clínica — ${tipoLabel}`;
+
+  const seccionPlan = plan.length ? `<div class="hc-view-section"><h4>Plan en consultorio (${plan.length} sesiones)</h4>
+    <div class="tabla-wrap"><table class="dash-table"><thead><tr><th>Fecha</th><th>Procedimiento</th><th>Equipos</th><th>Tipo</th><th>Firma</th></tr></thead>
+    <tbody>${plan.map(p => `<tr><td>${p.fecha}</td><td>${p.procedimiento}</td><td>${p.equipos}</td><td>${p.tipoTerapia}</td><td>${p.firma}</td></tr>`).join('')}</tbody></table></div></div>` : '';
+
+  const seccionPagos = `<div class="hc-view-section"><h4>Control de pagos</h4>
+    <div class="hc-view-grid">
+      <div><label>Valor total</label><p>${formatCOP(h.valorTotal)}</p></div>
+      <div><label>Saldo pendiente</label><p style="color:${h.saldoPendiente > 0 ? '#dc2626' : '#065f46'}">${formatCOP(h.saldoPendiente)}</p></div>
+      <div><label>N° sesiones</label><p>${h.numSesiones || 0}</p></div>
+      <div><label>Esteticista</label><p>${h.esteticista || '—'}</p></div>
+    </div></div>`;
+
+  const seccionBase = `<div class="hc-view-section"><h4>Datos del paciente</h4>
+    <div class="hc-view-grid">
+      <div><label>Nombre</label><p>${h.nombre}</p></div><div><label>Cédula</label><p>${h.cedula}</p></div>
+      <div><label>Edad</label><p>${h.edad || '—'}</p></div><div><label>Género</label><p>${h.genero || '—'}</p></div>
+      <div><label>EPS</label><p>${h.eps || '—'}</p></div><div><label>RH</label><p>${h.rh || '—'}</p></div>
+      <div><label>Celular</label><p>${h.celular}</p></div><div><label>Email</label><p>${h.email || '—'}</p></div>
+    </div></div>`;
+
+  let seccionEspecifica = '';
+  if (tipo === 'corporal') {
+    const s = h.semiologia || {};
+    seccionEspecifica = `<div class="hc-view-section"><h4>Semiología corporal</h4>
       <div class="hc-view-grid">
         <div><label>Peso</label><p>${s.peso || '—'} kg</p></div><div><label>Estatura</label><p>${s.estatura || '—'} m</p></div>
         <div><label>IMC</label><p>${s.imc || '—'}</p></div><div><label>Grasa total</label><p>${s.grasaTotal || '—'}%</p></div>
         <div><label>Músculo total</label><p>${s.musculoTotal || '—'}%</p></div><div><label>Grasa visceral</label><p>${s.grasaVisceral || '—'}</p></div>
-      </div>
-    </div>
-    ${plan.length ? `<div class="hc-view-section"><h4>Plan en consultorio (${plan.length} sesiones)</h4>
-      <div class="tabla-wrap"><table class="dash-table"><thead><tr><th>Fecha</th><th>Procedimiento</th><th>Equipos</th><th>Tipo</th><th>Firma</th></tr></thead>
-      <tbody>${plan.map(p => `<tr><td>${p.fecha}</td><td>${p.procedimiento}</td><td>${p.equipos}</td><td>${p.tipoTerapia}</td><td>${p.firma}</td></tr>`).join('')}</tbody></table></div></div>` : ''}
-    <div class="hc-view-section"><h4>Control de pagos</h4>
+      </div></div>`;
+  } else if (tipo === 'facial') {
+    const df = h.datosFacial || {};
+    seccionEspecifica = `<div class="hc-view-section"><h4>Análisis Facial</h4>
       <div class="hc-view-grid">
-        <div><label>Valor total</label><p>${formatCOP(h.valorTotal)}</p></div>
-        <div><label>Saldo pendiente</label><p style="color:${h.saldoPendiente > 0 ? '#dc2626' : '#065f46'}">${formatCOP(h.saldoPendiente)}</p></div>
-        <div><label>Tratamiento</label><p>${h.tratamientoDescripcion || '—'}</p></div>
-        <div><label>N° sesiones</label><p>${h.numSesiones || 0}</p></div>
+        <div><label>Tipo de piel</label><p>${df.tipoPiel || '—'}</p></div>
+        <div><label>Fototipo</label><p>${df.fototipo || '—'}</p></div>
+        <div><label>Estado piel</label><p>${(df.estadoPiel || []).join(', ') || '—'}</p></div>
+        <div><label>Patologías</label><p>${(df.patologias || []).join(', ') || '—'}</p></div>
       </div>
-    </div>
-    ${h.observaciones ? `<div class="hc-view-section"><h4>Observaciones</h4><p style="font-size:.85rem;color:var(--text-mid)">${h.observaciones}</p></div>` : ''}`;
+      ${df.antecedentes ? `<p style="font-size:.8rem;margin-top:.5rem"><strong>Antecedentes:</strong> ${df.antecedentes}</p>` : ''}
+      ${df.alergiasMeds ? `<p style="font-size:.8rem"><strong>Alergias/Medicamentos:</strong> ${df.alergiasMeds}</p>` : ''}
+    </div>`;
+  }
+
+  const seccionObs = h.observaciones ? `<div class="hc-view-section"><h4>Observaciones</h4><p style="font-size:.85rem;color:var(--text-mid)">${h.observaciones}</p></div>` : '';
+
+  document.getElementById('modal-ver-hc-content').innerHTML =
+    seccionBase + seccionEspecifica + seccionPlan + seccionPagos + seccionObs;
   abrirModal('modal-ver-hc');
 }
 
