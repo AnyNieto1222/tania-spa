@@ -278,7 +278,7 @@ document.addEventListener('click', e => {
 // ============================================================
 //  GERENTE — carga general
 // ============================================================
-function cargarGerente() {
+async function cargarGerente() {
   actualizarStatsGerente();
   renderResumenRecientes();
   renderResumenNuevos();
@@ -293,7 +293,7 @@ function cargarGerente() {
   renderTablaCitas();
   renderEstadosInventario();
   renderTablaInventario();
-  renderSelectEsteticistasComision();
+  await renderSelectEsteticistasComision();
 }
 
 function renderMisClientesGerente() {
@@ -1097,6 +1097,10 @@ function cargarEsteticista() {
   renderMisClientes();
   renderMiHistorial();
   renderCitasHoyEsteticista();
+  renderEstadosCitasEsteticista();
+  renderTablaCitasEsteticista();
+  renderEstadosInventarioEst();
+  renderTablaInventarioEst();
 }
 
 function actualizarStatsEsteticista() {
@@ -1269,32 +1273,19 @@ function renderEstadosCitasEsteticista() {
   document.getElementById('stat-est-citas-programadas').textContent = mis.filter(c => c.estado === 'programada').length;
   document.getElementById('stat-est-citas-completadas').textContent = mis.filter(c => c.estado === 'completada').length;
   document.getElementById('stat-est-citas-canceladas').textContent  = mis.filter(c => c.estado === 'cancelada').length;
-
-  const hoyList  = mis.filter(c => c.fecha === hoy && c.estado === 'programada');
-  const alertaEl = document.getElementById('alerta-citas-est');
-  if (hoyList.length > 0) {
-    alertaEl.style.display = 'block';
-    alertaEl.innerHTML = `<div class="stock-alert">
-      <span class="stock-alert-icon">📅</span>
-      <div>
-        <strong>${hoyList.length} cita${hoyList.length > 1 ? 's' : ''} para hoy:</strong>
-        <span>${hoyList.map(c => `${c.clienteNombre} · ${c.hora}`).join(', ')}</span>
-      </div>
-    </div>`;
-  } else {
-    alertaEl.style.display = 'none';
-  }
+  document.getElementById('stat-est-citas-hoy').textContent         = mis.filter(c => c.fecha === hoy && c.estado === 'programada').length;
 }
 
-function renderTablaCitasEsteticista(filtro = '') {
+function renderTablaCitasEsteticista(filtro = '', estadoFiltro = '') {
   const tbody  = document.getElementById('tbody-citas-est');
   const nombre = state.sesionActual ? state.sesionActual.nombre : '';
   let lista = state.citas.filter(c => {
-    const esMia      = c.esteticista === nombre;
-    const matchTexto = !filtro ||
+    const esMia       = c.esteticista === nombre;
+    const matchTexto  = !filtro ||
       c.clienteNombre.toLowerCase().includes(filtro.toLowerCase()) ||
       c.servicio.toLowerCase().includes(filtro.toLowerCase());
-    return esMia && matchTexto;
+    const matchEstado = !estadoFiltro || c.estado === estadoFiltro;
+    return esMia && matchTexto && matchEstado;
   });
   lista = [...lista].sort((a, b) =>
     (a.fecha + 'T' + a.hora) < (b.fecha + 'T' + b.hora) ? 1 : -1
@@ -1305,18 +1296,35 @@ function renderTablaCitasEsteticista(filtro = '') {
     cancelada:   '<span class="badge-cancelada">Cancelada</span>',
   };
   tbody.innerHTML = lista.length
-    ? lista.map(c => `<tr>
-        <td><strong>${c.clienteNombre}</strong></td>
-        <td style="font-size:.75rem">${c.clienteTel}<br><span style="color:var(--text-soft)">${c.clienteEmail || '—'}</span></td>
-        <td>${c.servicio}</td>
-        <td>${formatFecha(c.fecha)}</td>
-        <td>${c.hora}</td>
-        <td>${badges[c.estado] || ''}</td>
-        <td>${c.estado === 'programada' ? `<button class="btn-atender-cita" onclick="atenderCita(${c.id})">Atender →</button>` : '—'}</td>
-      </tr>`).join('')
+    ? lista.map(c => {
+        const acciones = c.estado === 'programada'
+          ? `<div class="acciones-cell">
+               <button class="btn-accion btn-completar" title="Completar" onclick="cambiarEstadoCita(${c.id},'completada')">✓</button>
+               <button class="btn-accion btn-editar"    title="Editar"    onclick="editarCita(${c.id})">✎</button>
+               <button class="btn-accion btn-cancelar"  title="Cancelar"  onclick="cambiarEstadoCita(${c.id},'cancelada')">✕</button>
+             </div>`
+          : `<button class="btn-accion btn-eliminar-inv" title="Eliminar" onclick="eliminarCita(${c.id})">🗑</button>`;
+        return `<tr>
+          <td><strong>${c.clienteNombre}</strong></td>
+          <td style="font-size:.75rem">${c.clienteTel}<br><span style="color:var(--text-soft)">${c.clienteEmail || '—'}</span></td>
+          <td>${c.servicio}</td>
+          <td>${formatFecha(c.fecha)}</td>
+          <td>${c.hora}</td>
+          <td>${badges[c.estado] || ''}</td>
+          <td>${acciones}</td>
+        </tr>`;
+      }).join('')
     : '<tr><td colspan="7" style="text-align:center;color:var(--text-soft);padding:1.5rem">Sin citas registradas</td></tr>';
 }
 
+function filtrarCitasTextoEst(v) {
+  const est = document.getElementById('filtro-estado-citas-est')?.value || '';
+  renderTablaCitasEsteticista(v, est);
+}
+function filtrarCitasEstadoEst(v) {
+  const txt = document.querySelector('#esteticista-citas .search-bar input')?.value || '';
+  renderTablaCitasEsteticista(txt, v);
+}
 function filtrarMisCitas(v) { renderTablaCitasEsteticista(v); }
 
 async function atenderCita(citaId) {
@@ -1636,6 +1644,13 @@ const SERVICIOS_CITA = [
   'Post Operatorio',
 ];
 
+function refrescarCitas() {
+  renderEstadosCitas();
+  renderTablaCitas();
+  renderEstadosCitasEsteticista();
+  renderTablaCitasEsteticista();
+}
+
 function renderEstadosCitas() {
   const hoy = new Date().toISOString().split('T')[0];
   document.getElementById('stat-citas-programadas').textContent =
@@ -1752,8 +1767,7 @@ async function guardarCita() {
   ['cita-nombre','cita-tel','cita-email','cita-fecha','cita-hora','cita-notas'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
-  renderEstadosCitas();
-  renderTablaCitas();
+  refrescarCitas();
   showToast(`✦ Cita de ${nombre} agendada`);
 }
 
@@ -1816,8 +1830,7 @@ async function actualizarCita() {
                          servicio, fecha, hora, esteticista, notas });
   await fetch(`/api/citas/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cita) });
   cerrarModal('modal-editar-cita');
-  renderEstadosCitas();
-  renderTablaCitas();
+  refrescarCitas();
   showToast(`✦ Cita de ${nombre} actualizada`);
 }
 
@@ -1828,8 +1841,7 @@ async function cambiarEstadoCita(id, estado) {
   if (!confirm(msgs[estado])) return;
   cita.estado = estado;
   await fetch(`/api/citas/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cita) });
-  renderEstadosCitas();
-  renderTablaCitas();
+  refrescarCitas();
   showToast(`✦ Cita ${estado}`);
 }
 
@@ -1837,8 +1849,7 @@ async function eliminarCita(id) {
   if (!confirm('¿Eliminar esta cita del historial?')) return;
   await fetch(`/api/citas/${id}`, { method: 'DELETE' });
   state.citas = state.citas.filter(c => c.id !== id);
-  renderEstadosCitas();
-  renderTablaCitas();
+  refrescarCitas();
   showToast('Cita eliminada');
 }
 
@@ -2124,12 +2135,12 @@ async function eliminarProducto(id) {
 let filasServiciosComision = [];
 let filasProductosComision = [];
 
-function renderSelectEsteticistasComision() {
+async function renderSelectEsteticistasComision() {
   const sel = document.getElementById('com-esteticista');
   if (!sel) return;
-  // Combina personal de la BD + usuarios del localStorage para no quedar vacío
-  const deDB    = state.personal.map(p => p.nombre);
-  const deLocal = obtenerUsuariosApp()
+  const deDB      = state.personal.map(p => p.nombre);
+  const usuarios  = await obtenerUsuariosApp();
+  const deLocal   = usuarios
     .filter(u => u.rol !== 'administradora')
     .map(u => u.nombre);
   const nombres = [...new Set([...deDB, ...deLocal])].filter(Boolean);
@@ -2137,7 +2148,7 @@ function renderSelectEsteticistasComision() {
     nombres.map(n => `<option value="${n}">${n}</option>`).join('');
 }
 
-function abrirModalComision(id = null) {
+async function abrirModalComision(id = null) {
   const editing   = id !== null;
   const esGerente = state.sesionActual?.rol === 'gerente' || state.sesionActual?.rol === 'administradora';
 
@@ -2147,7 +2158,7 @@ function abrirModalComision(id = null) {
   filasProductosComision = [];
 
   // Poblar selector siempre (para gerente y esteticista)
-  renderSelectEsteticistasComision();
+  await renderSelectEsteticistasComision();
 
   if (editing) {
     const com = state.comisiones.find(c => c.id === id);
