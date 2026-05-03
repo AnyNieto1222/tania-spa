@@ -13,8 +13,8 @@
 const USUARIOS_DEFAULT = [
   { usuario: 'Tania.Admin',     password: 'Admin@2026',  rol: 'administradora', nombre: 'Tania Rodríguez'  },
   { usuario: 'Tania.Arias', password: 'Tania@2026',  rol: 'gerente',        nombre: 'Tania Arias'  },
-  { usuario: 'Maria.Gonzalez',  password: 'Maria@2026',  rol: 'esteticista',    nombre: 'María González'   },
-  { usuario: 'Laura.Diaz',      password: 'Laura@2026',  rol: 'esteticista',    nombre: 'Laura Díaz'       },
+  { usuario: 'Valentina.Quintero',  password: 'Valentina.Quintero2026',  rol: 'esteticista',    nombre: 'Valentina Quintero'   },
+  { usuario: 'Daniela.Camargo',      password: 'Daniela.Camargo2026 ',  rol: 'esteticista',    nombre: 'Daniela Camargo'       },
 ];
 
 async function sha256(texto) {
