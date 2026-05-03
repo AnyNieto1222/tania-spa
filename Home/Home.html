@@ -67,31 +67,55 @@
           <div>
             <p class="dash-label">✦ Panel de gerencia</p>
             <h1 class="dash-title" id="g-saludo">Buenos días, <em>Tania</em> 🌺</h1>
-            <p class="dash-subtitle">Resumen general del spa</p>
+            <p class="dash-subtitle">Resumen en tiempo real del spa</p>
           </div>
           <div class="header-date" id="g-fecha">Domingo, 19 Abr 2026</div>
         </div>
+
+        <!-- 4 stat cards: clientes, tratamientos, ingresos, personal -->
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-icon s-rose"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
-            <div><p class="stat-num" id="stat-total-clientes">0</p><p class="stat-label">Clientes registrados</p></div>
+            <div class="stat-icon s-rose">
+              <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            </div>
+            <div>
+              <p class="stat-num" id="stat-total-clientes">0</p>
+              <p class="stat-label">Clientes registrados</p>
+            </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon s-plum"><svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg></div>
-            <div><p class="stat-num" id="stat-total-registros">0</p><p class="stat-label">Tratamientos registrados</p></div>
+            <div class="stat-icon s-plum">
+              <svg viewBox="0 0 24 24"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
+            </div>
+            <div>
+              <p class="stat-num" id="stat-total-registros">0</p>
+              <p class="stat-label">Sesiones realizadas</p>
+            </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon s-gold"><svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></div>
-            <div><p class="stat-num" id="stat-ingresos-resumen">$0</p><p class="stat-label">Ingresos este mes</p></div>
+            <div class="stat-icon s-gold">
+              <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+            </div>
+            <div>
+              <p class="stat-num" id="stat-ingresos-resumen">$0</p>
+              <p class="stat-label">Ingresos este mes</p>
+            </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon s-green"><svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg></div>
-            <div><p class="stat-num" id="stat-personal">3</p><p class="stat-label">Personal activo</p></div>
+            <div class="stat-icon s-green">
+              <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </div>
+            <div>
+              <p class="stat-num" id="stat-personal">0</p>
+              <p class="stat-label">Personal activo</p>
+            </div>
           </div>
         </div>
+
+        <!-- Últimos tratamientos + clientes nuevos -->
         <div class="section-block">
           <div class="block-header">
-            <h3 class="block-title">Últimos tratamientos registrados</h3>
+            <h3 class="block-title">Últimas sesiones registradas</h3>
             <button class="btn-ver-todo" onclick="showTab('gerente','historial',null)">Ver todo →</button>
           </div>
           <div id="resumen-registros-recientes">
@@ -100,7 +124,7 @@
         </div>
         <div class="dos-columnas">
           <div class="section-block">
-            <h3 class="block-title">Clientes nuevos registrados</h3>
+            <h3 class="block-title">Clientes nuevos</h3>
             <div id="resumen-clientes-nuevos"><p class="empty-msg">Sin clientes nuevos aún.</p></div>
           </div>
           <div class="section-block">
@@ -116,6 +140,14 @@
           <div><p class="dash-label">✦ Base de datos</p><h1 class="dash-title">Clientes</h1></div>
           <button class="btn-primary-dash" onclick="abrirModal('modal-nuevo-cliente')">+ Nuevo cliente</button>
         </div>
+
+        <!-- Mis clientes asignados (visible solo cuando hay clientes asignados al gerente) -->
+        <div id="g-mis-clientes-section" style="display:none">
+          <p class="dash-label" style="margin-bottom:.75rem">✦ Mis clientes asignados</p>
+          <div class="clientes-cards" id="g-mis-clientes-cards"></div>
+          <div style="margin:1.25rem 0;border-top:1px solid var(--rose-light)"></div>
+        </div>
+
         <div class="search-bar">
           <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
           <input type="text" placeholder="Buscar por nombre o tipo..." oninput="filtrarTablaClientes(this.value)">
@@ -339,7 +371,10 @@
         </div>
       </div>
       <nav class="sidebar-nav">
-        <a class="nav-item active" onclick="showTab('esteticista','mis-clientes',this)">
+        <a class="nav-item active" onclick="showTab('esteticista','resumen',this)">
+          <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Resumen
+        </a>
+        <a class="nav-item" onclick="showTab('esteticista','mis-clientes',this)">
           <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Mis Clientes
         </a>
         <a class="nav-item" onclick="showTab('esteticista','nuevo-registro',this)">
@@ -362,11 +397,49 @@
 
     <main class="dash-main">
 
+      <!-- RESUMEN ESTETICISTA -->
+      <div id="esteticista-resumen" class="tab-content active">
+        <div class="dash-header">
+          <div>
+            <p class="dash-label">✦ Mi panel</p>
+            <h1 class="dash-title" id="est-saludo">Buenos días</h1>
+            <p class="dash-subtitle">Tu actividad en Tania Spa</p>
+          </div>
+        </div>
+        <div class="stats-grid stats-2col">
+          <div class="stat-card">
+            <div class="stat-icon s-rose">
+              <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            </div>
+            <div>
+              <p class="stat-num" id="est-stat-clientes">0</p>
+              <p class="stat-label">Mis clientes</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon s-plum">
+              <svg viewBox="0 0 24 24"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
+            </div>
+            <div>
+              <p class="stat-num" id="est-stat-tratamientos">0</p>
+              <p class="stat-label">Sesiones realizadas</p>
+            </div>
+          </div>
+        </div>
+        <div class="section-block">
+          <div class="block-header">
+            <h3 class="block-title">Mis últimas sesiones</h3>
+            <button class="btn-ver-todo" onclick="showTab('esteticista','mi-historial',document.querySelectorAll('#dash-esteticista .nav-item')[3])">Ver todo →</button>
+          </div>
+          <div id="est-resumen-recientes"><p class="empty-msg">Aún no hay registros.</p></div>
+        </div>
+      </div>
+
       <!-- MIS CLIENTES -->
-      <div id="esteticista-mis-clientes" class="tab-content active">
+      <div id="esteticista-mis-clientes" class="tab-content">
         <div class="dash-header">
           <div><p class="dash-label">✦ Tus clientes asignados</p><h1 class="dash-title">Mis Clientes</h1></div>
-          <button class="btn-primary-dash" onclick="showTab('esteticista','nuevo-registro',document.querySelectorAll('#dash-esteticista .nav-item')[1])">+ Nuevo registro</button>
+          <button class="btn-primary-dash" onclick="showTab('esteticista','nuevo-registro',document.querySelectorAll('#dash-esteticista .nav-item')[2])">+ Nuevo registro</button>
         </div>
         <div class="search-bar">
           <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>

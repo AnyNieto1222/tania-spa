@@ -119,6 +119,7 @@ body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--text-
 
 /* ===== STATS ===== */
 .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.5rem; }
+.stats-2col { grid-template-columns:repeat(2,1fr); max-width:560px; }
 .stat-card {
   background:#fff; border:1px solid var(--rose-light); border-radius:14px;
   padding:1.1rem 1.25rem; display:flex; align-items:center; gap:.9rem;

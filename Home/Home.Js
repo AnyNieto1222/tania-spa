@@ -203,7 +203,10 @@ function showTab(dash, tab, link) {
   const target = document.getElementById(`${dash}-${tab}`);
   if (target) target.classList.add('active');
   if (link && link.classList) link.classList.add('active');
+  if (dash === 'gerente' && tab === 'resumen') { actualizarStatsGerente(); renderResumenRecientes(); renderResumenNuevos(); renderPersonalActividad(); }
   if (dash === 'gerente' && tab === 'estadisticas') renderEstadisticas();
+  if (dash === 'gerente' && tab === 'clientes') renderMisClientesGerente();
+  if (dash === 'esteticista' && tab === 'resumen') { actualizarStatsEsteticista(); renderResumenEstRecientes(); }
   if (dash === 'gerente' && tab === 'citas') { renderEstadosCitas(); renderTablaCitas(); }
   if (dash === 'gerente' && tab === 'inventario') { renderEstadosInventario(); renderTablaInventario(); }
   if (dash === 'gerente' && tab === 'comisiones') { renderStatsComisiones(); renderTablaComisiones(); }
@@ -278,6 +281,7 @@ function cargarGerente() {
   renderResumenNuevos();
   renderPersonalActividad();
   renderTablaClientes();
+  renderMisClientesGerente();
   renderHistorialGlobal();
   renderPersonalGrid();
   renderSelectEsteticistas();
@@ -287,6 +291,33 @@ function cargarGerente() {
   renderEstadosInventario();
   renderTablaInventario();
   renderSelectEsteticistasComision();
+}
+
+function renderMisClientesGerente() {
+  const sec  = document.getElementById('g-mis-clientes-section');
+  const cont = document.getElementById('g-mis-clientes-cards');
+  if (!sec || !cont || !state.sesionActual) return;
+  const miNombre = state.sesionActual.nombre;
+  const lista    = state.clientes.filter(c => c.esteticista === miNombre);
+  if (!lista.length) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+  cont.innerHTML = lista.map(c => `
+    <div class="cliente-card">
+      <div class="cc-top">
+        <div class="cc-avatar">${initiales(c.nombre)}</div>
+        <div>
+          <p class="cc-nombre">${c.nombre}</p>
+          <div class="cc-tipo"><span class="badge-${c.tipo}">${c.tipo === 'nuevo' ? 'Cliente nuevo' : 'Cliente antiguo'}</span></div>
+        </div>
+      </div>
+      <div class="cc-datos">
+        <span>📞 ${c.tel}</span>
+        <span>✉ ${c.email || '—'}</span>
+        <span>Visitas: ${c.visitas}</span>
+      </div>
+      ${c.alergias && c.alergias !== 'Ninguna' ? `<div class="cc-alergias">⚠ Alergias: ${c.alergias}</div>` : ''}
+      ${c.proximaCita ? `<div class="cc-prox">📅 Próx. cita: ${formatFecha(c.proximaCita)} — ${c.proxTrat || ''}</div>` : ''}
+    </div>`).join('');
 }
 
 function actualizarStatsGerente() {
@@ -417,10 +448,19 @@ async function eliminarPersonal(id) {
   showToast('Personal eliminado correctamente');
 }
 
+// Devuelve todos los usuarios del sistema con sus nombres exactos (igual que sesion.nombre)
+function obtenerPersonalAsignable() {
+  try {
+    const raw = localStorage.getItem('ts_usuarios_v2');
+    if (raw) return JSON.parse(raw).map(u => ({ nombre: u.nombre, cargo: u.rol }));
+  } catch {}
+  return state.personal.map(p => ({ nombre: p.nombre, cargo: p.cargo }));
+}
+
 function renderSelectEsteticistas() {
   const sel = document.getElementById('g-esteticista');
   if (!sel) return;
-  sel.innerHTML = state.personal
+  sel.innerHTML = obtenerPersonalAsignable()
     .map(p => `<option value="${p.nombre}">${p.nombre}</option>`)
     .join('');
 }
@@ -457,6 +497,7 @@ async function agregarClienteGerente() {
   document.getElementById('g-cita-servicio').value = '';
   actualizarStatsGerente();
   renderTablaClientes();
+  renderMisClientesGerente();
   renderResumenNuevos();
   showToast(`✦ Cliente "${nombre}" agregado${citaFecha && citaHora ? ` · Cita el ${formatFecha(citaFecha)}` : ''}`);
 }
@@ -945,9 +986,45 @@ function renderEstadisticas() {
 // ============================================================
 function cargarEsteticista() {
   poblarSelectClientes();
+  actualizarStatsEsteticista();
+  renderResumenEstRecientes();
   renderMisClientes();
   renderMiHistorial();
   renderCitasHoyEsteticista();
+}
+
+function actualizarStatsEsteticista() {
+  if (!state.sesionActual) return;
+  const miNombre = state.sesionActual.nombre;
+  const misClientes    = state.clientes.filter(c => c.esteticista === miNombre).length;
+  const misTratamientos = state.registros.filter(r => r.esteticista === miNombre).length;
+  const elStat = document.getElementById('est-stat-clientes');
+  const trStat = document.getElementById('est-stat-tratamientos');
+  if (elStat) elStat.textContent = misClientes;
+  if (trStat) trStat.textContent = misTratamientos;
+  const saludo = document.getElementById('est-saludo');
+  if (saludo) {
+    const h = new Date().getHours();
+    const txt = h < 12 ? 'Buenos días' : h < 18 ? 'Buenas tardes' : 'Buenas noches';
+    saludo.innerHTML = `${txt}, <em>${miNombre.split(' ')[0]}</em>`;
+  }
+}
+
+function renderResumenEstRecientes() {
+  const cont = document.getElementById('est-resumen-recientes');
+  if (!cont || !state.sesionActual) return;
+  const miNombre = state.sesionActual.nombre;
+  const ultimos  = state.registros.filter(r => r.esteticista === miNombre).reverse().slice(0, 5);
+  if (!ultimos.length) { cont.innerHTML = '<p class="empty-msg">Aún no hay registros.</p>'; return; }
+  cont.innerHTML = ultimos.map(r => `
+    <div class="reg-rec-item">
+      <div class="reg-rec-dot"></div>
+      <div class="reg-rec-info">
+        <p class="reg-rec-nombre">${r.clienteNombre} — ${r.tratamiento}</p>
+        <p class="reg-rec-det">${formatFecha(r.fecha)}</p>
+      </div>
+      <span class="badge-${r.tipo}">${r.tipo === 'nuevo' ? 'Nuevo' : 'Antiguo'}</span>
+    </div>`).join('');
 }
 
 function poblarSelectClientes() {
@@ -987,7 +1064,7 @@ function renderMisClientes(filtro = '') {
 function filtrarMisClientes(v) { renderMisClientes(v); }
 
 function preseleccionarCliente(id) {
-  showTab('esteticista', 'nuevo-registro', document.querySelectorAll('#dash-esteticista .nav-item')[1]);
+  showTab('esteticista', 'nuevo-registro', document.querySelectorAll('#dash-esteticista .nav-item')[2]);
   document.getElementById('tipo-cliente').value = 'antiguo';
   toggleClienteNuevo();
   document.getElementById('select-cliente-reg').value = id;
@@ -1173,6 +1250,8 @@ async function guardarRegistro() {
 
   renderMisClientes();
   renderMiHistorial();
+  actualizarStatsEsteticista();
+  renderResumenEstRecientes();
   if (window.citaEnAtencion) {
     const citaAtendida = state.citas.find(c => c.id === window.citaEnAtencion);
     if (citaAtendida) {
@@ -1183,8 +1262,11 @@ async function guardarRegistro() {
     renderCitasHoyEsteticista();
     renderEstadosCitas();
   }
+  // Actualizar stats gerente si está logueada (tratamiento registrado desde panel gerente)
+  const esGer = state.sesionActual?.rol === 'gerente' || state.sesionActual?.rol === 'administradora';
+  if (esGer) { actualizarStatsGerente(); renderResumenRecientes(); }
   showToast(`✦ Registro guardado para ${clienteNombre}`);
-  showTab('esteticista', 'mi-historial', document.querySelectorAll('#dash-esteticista .nav-item')[2]);
+  showTab('esteticista', 'mi-historial', document.querySelectorAll('#dash-esteticista .nav-item')[3]);
 }
 
 function renderMiHistorial() {
@@ -1461,8 +1543,11 @@ function verificarDisponibilidad(fecha, hora, esteticista, excludeId = null) {
 function poblarSelectsEsteticistaCita(selectId) {
   const sel = document.getElementById(selectId);
   if (!sel) return;
+  const rolesLabel = { esteticista: 'Esteticista', gerente: 'Gerente', administradora: 'Administradora' };
   sel.innerHTML = '<option value="">-- Selecciona --</option>' +
-    state.personal.map(p => `<option value="${p.nombre}">${p.nombre} (${p.cargo})</option>`).join('');
+    obtenerPersonalAsignable()
+      .map(p => `<option value="${p.nombre}">${p.nombre} (${rolesLabel[p.cargo] || p.cargo})</option>`)
+      .join('');
 }
 
 function iniciarFormCita() {
@@ -1534,7 +1619,7 @@ async function iniciarRegistroDesdeCita() {
     if (!confirm(`¿Registrar tratamiento para ${cita.clienteNombre}?\nEsto abrirá el formulario de la esteticista.`)) return;
     document.getElementById('dash-gerente').classList.remove('active');
     document.getElementById('dash-esteticista').classList.add('active');
-    showTab('esteticista', 'nuevo-registro', document.querySelectorAll('#dash-esteticista .nav-item')[1]);
+    showTab('esteticista', 'nuevo-registro', document.querySelectorAll('#dash-esteticista .nav-item')[2]);
     await atenderCita(id);
   }
 }
