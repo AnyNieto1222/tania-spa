@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem \"D:\\\\Alisson Proyecto U\\\\Tania-Alisson\\\\\" | Where-Object { $_.Name -ne \"node_modules\" })"
+    ]
+  }
+}

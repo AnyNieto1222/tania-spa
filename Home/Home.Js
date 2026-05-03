@@ -215,6 +215,7 @@ function showTab(dash, tab, link) {
   if (dash === 'esteticista' && tab === 'mis-comisiones') renderMisComisiones();
   if (dash === 'esteticista' && tab === 'hc-corporal') renderTablaHCEsteticista();
   if (dash === 'esteticista' && tab === 'nuevo-registro') renderCitasHoyEsteticista();
+  if (dash === 'esteticista' && tab === 'citas') { renderEstadosCitasEsteticista(); renderTablaCitasEsteticista(); }
 }
 
 // ============================================================
@@ -1258,6 +1259,64 @@ function renderCitasHoyEsteticista() {
       </div>
     </div>`;
 }
+
+function renderEstadosCitasEsteticista() {
+  const hoy    = new Date().toISOString().split('T')[0];
+  const nombre = state.sesionActual ? state.sesionActual.nombre : '';
+  const mis    = state.citas.filter(c => c.esteticista === nombre);
+
+  document.getElementById('stat-est-citas-programadas').textContent = mis.filter(c => c.estado === 'programada').length;
+  document.getElementById('stat-est-citas-completadas').textContent = mis.filter(c => c.estado === 'completada').length;
+  document.getElementById('stat-est-citas-canceladas').textContent  = mis.filter(c => c.estado === 'cancelada').length;
+
+  const hoyList  = mis.filter(c => c.fecha === hoy && c.estado === 'programada');
+  const alertaEl = document.getElementById('alerta-citas-est');
+  if (hoyList.length > 0) {
+    alertaEl.style.display = 'block';
+    alertaEl.innerHTML = `<div class="stock-alert">
+      <span class="stock-alert-icon">📅</span>
+      <div>
+        <strong>${hoyList.length} cita${hoyList.length > 1 ? 's' : ''} para hoy:</strong>
+        <span>${hoyList.map(c => `${c.clienteNombre} · ${c.hora}`).join(', ')}</span>
+      </div>
+    </div>`;
+  } else {
+    alertaEl.style.display = 'none';
+  }
+}
+
+function renderTablaCitasEsteticista(filtro = '') {
+  const tbody  = document.getElementById('tbody-citas-est');
+  const nombre = state.sesionActual ? state.sesionActual.nombre : '';
+  let lista = state.citas.filter(c => {
+    const esMia      = c.esteticista === nombre;
+    const matchTexto = !filtro ||
+      c.clienteNombre.toLowerCase().includes(filtro.toLowerCase()) ||
+      c.servicio.toLowerCase().includes(filtro.toLowerCase());
+    return esMia && matchTexto;
+  });
+  lista = [...lista].sort((a, b) =>
+    (a.fecha + 'T' + a.hora) < (b.fecha + 'T' + b.hora) ? 1 : -1
+  );
+  const badges = {
+    programada: '<span class="badge-programada">Programada</span>',
+    completada:  '<span class="badge-completada">Completada</span>',
+    cancelada:   '<span class="badge-cancelada">Cancelada</span>',
+  };
+  tbody.innerHTML = lista.length
+    ? lista.map(c => `<tr>
+        <td><strong>${c.clienteNombre}</strong></td>
+        <td style="font-size:.75rem">${c.clienteTel}<br><span style="color:var(--text-soft)">${c.clienteEmail || '—'}</span></td>
+        <td>${c.servicio}</td>
+        <td>${formatFecha(c.fecha)}</td>
+        <td>${c.hora}</td>
+        <td>${badges[c.estado] || ''}</td>
+        <td>${c.estado === 'programada' ? `<button class="btn-atender-cita" onclick="atenderCita(${c.id})">Atender →</button>` : '—'}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="7" style="text-align:center;color:var(--text-soft);padding:1.5rem">Sin citas registradas</td></tr>';
+}
+
+function filtrarMisCitas(v) { renderTablaCitasEsteticista(v); }
 
 async function atenderCita(citaId) {
   const cita = state.citas.find(c => c.id === citaId);

@@ -1,4 +1,3 @@
-
 // ============================================================
 //  USUARIOS POR DEFECTO — las contraseñas se hashean con
 //  SHA-256 en el primer arranque y NUNCA se guardan en texto

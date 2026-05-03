@@ -384,6 +384,9 @@
         <a class="nav-item" onclick="showTab('esteticista','mi-historial',this)">
           <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>Mi Historial
         </a>
+        <a class="nav-item" onclick="showTab('esteticista','citas',this)">
+          <svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>Mis Citas
+        </a>
         <a class="nav-item" onclick="showTab('esteticista','mis-comisiones',this)">
           <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/></svg>Mis Comisiones
         </a>
@@ -692,6 +695,41 @@
               <div class="tip-body"><p>Recomendar una fecha y tratamiento específicos para la próxima visita aumenta la fidelización del cliente y asegura la continuidad de los resultados.</p></div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- MIS CITAS (esteticista) -->
+      <div id="esteticista-citas" class="tab-content">
+        <div class="dash-header">
+          <div>
+            <p class="dash-label">✦ Mis citas programadas</p>
+            <h1 class="dash-title">Mis Citas</h1>
+          </div>
+        </div>
+        <div id="alerta-citas-est" style="display:none"></div>
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card">
+            <div class="stat-icon s-plum"><svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg></div>
+            <div><p class="stat-num" id="stat-est-citas-programadas">0</p><p class="stat-label">Programadas</p></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon s-green"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg></div>
+            <div><p class="stat-num" id="stat-est-citas-completadas">0</p><p class="stat-label">Completadas</p></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon s-rose"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg></div>
+            <div><p class="stat-num" id="stat-est-citas-canceladas">0</p><p class="stat-label">Canceladas</p></div>
+          </div>
+        </div>
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input type="text" placeholder="Buscar por cliente o servicio..." oninput="filtrarMisCitas(this.value)">
+        </div>
+        <div class="tabla-wrap">
+          <table class="dash-table">
+            <thead><tr><th>Cliente</th><th>Contacto</th><th>Servicio</th><th>Fecha</th><th>Hora</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="tbody-citas-est"></tbody>
+          </table>
         </div>
       </div>
 
