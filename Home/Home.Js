@@ -216,6 +216,7 @@ function showTab(dash, tab, link) {
   if (dash === 'esteticista' && tab === 'hc-corporal') renderTablaHCEsteticista();
   if (dash === 'esteticista' && tab === 'nuevo-registro') renderCitasHoyEsteticista();
   if (dash === 'esteticista' && tab === 'citas') { renderEstadosCitasEsteticista(); renderTablaCitasEsteticista(); }
+  if (dash === 'esteticista' && tab === 'inventario') { renderEstadosInventarioEst(); renderTablaInventarioEst(); }
 }
 
 // ============================================================
@@ -1322,6 +1323,7 @@ async function atenderCita(citaId) {
   const cita = state.citas.find(c => c.id === citaId);
   if (!cita) return;
   window.citaEnAtencion = citaId;
+  showTab('esteticista', 'nuevo-registro', document.querySelectorAll('#dash-esteticista .nav-item')[2]);
 
   let cliente = state.clientes.find(c =>
     (cita.clienteId && c.id === cita.clienteId) ||
@@ -1924,6 +1926,80 @@ function renderTablaInventario(filtro = '') {
 }
 
 function filtrarInventario(v) { renderTablaInventario(v); }
+
+function renderEstadosInventarioEst() {
+  const hoy  = new Date();
+  const en30 = new Date(hoy); en30.setDate(hoy.getDate() + 30);
+  const bajoStock = state.inventario.filter(p => p.cantidad <= p.puntoReposicion);
+  const porVencer = state.inventario.filter(p => {
+    if (!p.fechaVencimiento) return false;
+    const fv = new Date(p.fechaVencimiento);
+    return fv >= hoy && fv <= en30;
+  });
+  document.getElementById('est-inv-total').textContent      = state.inventario.length;
+  document.getElementById('est-inv-bajo-stock').textContent = bajoStock.length;
+  document.getElementById('est-inv-por-vencer').textContent = porVencer.length;
+  const alertaEl = document.getElementById('alerta-bajo-stock-est');
+  if (bajoStock.length > 0) {
+    alertaEl.style.display = 'block';
+    alertaEl.innerHTML = `<div class="stock-alert">
+      <span class="stock-alert-icon">⚠</span>
+      <div>
+        <strong>${bajoStock.length} producto${bajoStock.length > 1 ? 's' : ''} con bajo stock:</strong>
+        <span>${bajoStock.map(p => p.descripcion).join(', ')}</span>
+      </div>
+    </div>`;
+  } else {
+    alertaEl.style.display = 'none';
+  }
+}
+
+function renderTablaInventarioEst(filtro = '') {
+  const tbody = document.getElementById('tbody-inventario-est');
+  const lista = state.inventario.filter(p =>
+    !filtro ||
+    p.descripcion.toLowerCase().includes(filtro.toLowerCase()) ||
+    p.marca.toLowerCase().includes(filtro.toLowerCase()) ||
+    p.proveedor.toLowerCase().includes(filtro.toLowerCase()) ||
+    p.idProducto.toLowerCase().includes(filtro.toLowerCase())
+  );
+  const hoy  = new Date();
+  const en30 = new Date(hoy); en30.setDate(hoy.getDate() + 30);
+  tbody.innerHTML = lista.length
+    ? lista.map(p => {
+        const bajo     = p.cantidad <= p.puntoReposicion;
+        const fv       = p.fechaVencimiento ? new Date(p.fechaVencimiento) : null;
+        const vencido  = fv && fv < hoy;
+        const proxVenc = fv && !vencido && fv <= en30;
+        const estadoBdg = bajo
+          ? '<span class="badge-bajo-stock">Bajo stock</span>'
+          : '<span class="badge-stock-ok">Stock OK</span>';
+        const vencLabel = !p.fechaVencimiento ? '—'
+          : vencido  ? `<span class="badge-vencido">${formatFecha(p.fechaVencimiento)}</span>`
+          : proxVenc ? `<span class="badge-prox-vencer">${formatFecha(p.fechaVencimiento)}</span>`
+          : formatFecha(p.fechaVencimiento);
+        return `<tr class="${bajo ? 'row-alerta' : ''}">
+          <td><code style="font-size:.73rem;color:var(--plum)">${p.idProducto}</code></td>
+          <td><strong>${p.descripcion}</strong></td>
+          <td>${p.marca}</td>
+          <td>${p.proveedor || '—'}</td>
+          <td><strong style="${bajo ? 'color:#dc2626' : ''}">${p.cantidad}</strong></td>
+          <td>${p.puntoReposicion}</td>
+          <td>${vencLabel}</td>
+          <td>${estadoBdg}</td>
+          <td>
+            <div class="acciones-cell">
+              <button class="btn-accion btn-editar"       title="Editar"        onclick="editarProducto(${p.id})">✎</button>
+              <button class="btn-accion btn-ajustar"      title="Ajustar stock" onclick="abrirAjusteStock(${p.id})">±</button>
+              <button class="btn-accion btn-eliminar-inv" title="Eliminar"      onclick="eliminarProducto(${p.id})">🗑</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="9" style="text-align:center;color:var(--text-soft);padding:1.5rem">Sin productos registrados</td></tr>';
+}
+
+function filtrarInventarioEst(v) { renderTablaInventarioEst(v); }
 
 async function guardarProducto() {
   const idProducto      = document.getElementById('inv-id').value.trim();

@@ -387,6 +387,9 @@
         <a class="nav-item" onclick="showTab('esteticista','citas',this)">
           <svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>Mis Citas
         </a>
+        <a class="nav-item" onclick="showTab('esteticista','inventario',this)">
+          <svg viewBox="0 0 24 24"><path d="M20 7l-8-5-8 5v10l8 5 8-5V7zm-8 1.5L18 12l-6 3.5L6 12l6-3.5zM4 13.33l7 4.38v2.96L4 16.3V13.33zm9 7.34v-2.96l7-4.38v2.97l-7 4.37z"/></svg>Inventario
+        </a>
         <a class="nav-item" onclick="showTab('esteticista','mis-comisiones',this)">
           <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.91s4.18 1.39 4.18 3.91c-.01 1.83-1.38 2.83-3.12 3.16z"/></svg>Mis Comisiones
         </a>
@@ -729,6 +732,41 @@
           <table class="dash-table">
             <thead><tr><th>Cliente</th><th>Contacto</th><th>Servicio</th><th>Fecha</th><th>Hora</th><th>Estado</th><th>Acciones</th></tr></thead>
             <tbody id="tbody-citas-est"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- INVENTARIO (esteticista - solo lectura) -->
+      <div id="esteticista-inventario" class="tab-content">
+        <div class="dash-header">
+          <div>
+            <p class="dash-label">✦ Control de productos</p>
+            <h1 class="dash-title">Inventario</h1>
+          </div>
+        </div>
+        <div id="alerta-bajo-stock-est" style="display:none"></div>
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card">
+            <div class="stat-icon s-plum"><svg viewBox="0 0 24 24"><path d="M20 7l-8-5-8 5v10l8 5 8-5V7zm-8 1.5L18 12l-6 3.5L6 12l6-3.5zM4 13.33l7 4.38v2.96L4 16.3V13.33zm9 7.34v-2.96l7-4.38v2.97l-7 4.37z"/></svg></div>
+            <div><p class="stat-num" id="est-inv-total">0</p><p class="stat-label">Total productos</p></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#fef9c3,#fde68a)"><svg viewBox="0 0 24 24" style="fill:#b45309"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></div>
+            <div><p class="stat-num" id="est-inv-bajo-stock">0</p><p class="stat-label">Bajo stock</p></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#fce7f3,#fbcfe8)"><svg viewBox="0 0 24 24" style="fill:#9d174d"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg></div>
+            <div><p class="stat-num" id="est-inv-por-vencer">0</p><p class="stat-label">Por vencer (30d)</p></div>
+          </div>
+        </div>
+        <div class="search-bar">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input type="text" placeholder="Buscar por producto, marca, proveedor o ID..." oninput="filtrarInventarioEst(this.value)">
+        </div>
+        <div class="tabla-wrap">
+          <table class="dash-table">
+            <thead><tr><th>ID</th><th>Producto</th><th>Marca</th><th>Proveedor</th><th>Cantidad</th><th>Stock mín.</th><th>Vence</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="tbody-inventario-est"></tbody>
           </table>
         </div>
       </div>
