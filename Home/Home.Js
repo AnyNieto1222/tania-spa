@@ -173,8 +173,9 @@ async function sha256(texto) {
     .map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-function obtenerUsuariosApp() {
-  return JSON.parse(localStorage.getItem('ts_usuarios_v2') || '[]');
+async function obtenerUsuariosApp() {
+  const res = await fetch('/api/usuarios');
+  return res.json();
 }
 
 function togglePwd(inputId, btn) {
@@ -298,7 +299,7 @@ function renderMisClientesGerente() {
   const cont = document.getElementById('g-mis-clientes-cards');
   if (!sec || !cont || !state.sesionActual) return;
   const miNombre = state.sesionActual.nombre;
-  const lista    = state.clientes.filter(c => c.esteticista === miNombre);
+  const lista    = state.clientes.filter(c => c.esteticista === miNombre && c.activo !== 0 && c.activo !== '0');
   if (!lista.length) { sec.style.display = 'none'; return; }
   sec.style.display = 'block';
   cont.innerHTML = lista.map(c => `
@@ -321,7 +322,7 @@ function renderMisClientesGerente() {
 }
 
 function actualizarStatsGerente() {
-  document.getElementById('stat-total-clientes').textContent = state.clientes.length;
+  document.getElementById('stat-total-clientes').textContent = state.clientes.filter(c => c.activo !== 0 && c.activo !== '0').length;
   document.getElementById('stat-total-registros').textContent = state.registros.length;
   document.getElementById('stat-personal').textContent        = state.personal.length;
 
@@ -353,7 +354,7 @@ function renderResumenRecientes() {
 
 function renderResumenNuevos() {
   const cont   = document.getElementById('resumen-clientes-nuevos');
-  const nuevos = state.clientes.filter(c => c.tipo === 'nuevo');
+  const nuevos = state.clientes.filter(c => c.tipo === 'nuevo' && c.activo !== 0 && c.activo !== '0');
   if (!nuevos.length) { cont.innerHTML = '<p class="empty-msg">Sin clientes nuevos aún.</p>'; return; }
   cont.innerHTML = nuevos.map(c => `
     <div class="mini-item">
@@ -371,27 +372,138 @@ function renderPersonalActividad() {
     </div>`).join('');
 }
 
+let _filtroClientes = '';
+let _mostrarInactivos = false;
+
+function toggleMostrarInactivos() {
+  _mostrarInactivos = !_mostrarInactivos;
+  const btn = document.getElementById('btn-toggle-inactivos');
+  if (btn) {
+    btn.textContent = _mostrarInactivos ? 'Ocultar inactivos' : 'Mostrar inactivos';
+    btn.classList.toggle('active', _mostrarInactivos);
+  }
+  renderTablaClientes(_filtroClientes);
+}
+
 function renderTablaClientes(filtro = '') {
+  _filtroClientes = filtro;
   const tbody = document.getElementById('tbody-clientes');
-  const lista = state.clientes.filter(c =>
-    c.nombre.toLowerCase().includes(filtro.toLowerCase()) ||
-    c.tipo.toLowerCase().includes(filtro.toLowerCase())
-  );
+  let lista = state.clientes.filter(c => {
+    const activo = c.activo !== 0 && c.activo !== '0';
+    if (!_mostrarInactivos && !activo) return false;
+    const q = filtro.toLowerCase();
+    return c.nombre.toLowerCase().includes(q) ||
+      (c.tipo || '').toLowerCase().includes(q) ||
+      (c.esteticista || '').toLowerCase().includes(q);
+  });
   tbody.innerHTML = lista.length
-    ? lista.map(c => `
-      <tr>
-        <td><strong>${c.nombre}</strong></td>
-        <td><span class="badge-${c.tipo}">${c.tipo === 'nuevo' ? 'Nuevo' : 'Antiguo'}</span></td>
-        <td>${c.tel}</td>
-        <td>${c.alergias}</td>
-        <td>${c.esteticista}</td>
-        <td>${c.visitas}</td>
-        <td>${formatFecha(c.proximaCita)}</td>
-      </tr>`).join('')
-    : '<tr><td colspan="7" style="text-align:center;color:var(--text-soft);padding:1.5rem">Sin resultados</td></tr>';
+    ? lista.map(c => {
+        const activo = c.activo !== 0 && c.activo !== '0';
+        return `
+        <tr class="${activo ? '' : 'fila-inactiva'}">
+          <td><strong>${c.nombre}</strong>${activo ? '' : ' <span class="badge-inactivo">Inactivo</span>'}</td>
+          <td><span class="badge-${c.tipo}">${c.tipo === 'nuevo' ? 'Nuevo' : 'Antiguo'}</span></td>
+          <td>${c.tel}</td>
+          <td>${c.email || '—'}</td>
+          <td>${c.alergias || '—'}</td>
+          <td>${c.esteticista}</td>
+          <td>${c.visitas}</td>
+          <td>${formatFecha(c.proximaCita)}</td>
+          <td>
+            <div class="acciones-cell">
+              <button class="btn-accion btn-editar" onclick="editarCliente(${c.id})" title="Editar">✎</button>
+              ${activo
+                ? `<button class="btn-accion btn-cancelar" onclick="desactivarCliente(${c.id})" title="Desactivar">🚫</button>`
+                : `<button class="btn-accion btn-completar" onclick="reactivarCliente(${c.id})" title="Reactivar">↩</button>`}
+            </div>
+          </td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="9" style="text-align:center;color:var(--text-soft);padding:1.5rem">Sin resultados</td></tr>';
 }
 
 function filtrarTablaClientes(v) { renderTablaClientes(v); }
+
+async function desactivarCliente(id) {
+  const c = state.clientes.find(x => x.id === id);
+  if (!c) return;
+  if (!confirm(`¿Desactivar a "${c.nombre}"?\nNo se eliminará, solo dejará de aparecer en las listas activas.`)) return;
+  const actualizado = { ...c, activo: 0 };
+  await fetch(`/api/clientes/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(actualizado),
+  });
+  const idx = state.clientes.findIndex(x => x.id === id);
+  if (idx >= 0) state.clientes[idx].activo = 0;
+  renderTablaClientes(_filtroClientes);
+  renderMisClientesGerente();
+  actualizarStatsGerente();
+  showToast(`"${c.nombre}" desactivado`);
+}
+
+async function reactivarCliente(id) {
+  const c = state.clientes.find(x => x.id === id);
+  if (!c) return;
+  const actualizado = { ...c, activo: 1 };
+  await fetch(`/api/clientes/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(actualizado),
+  });
+  const idx = state.clientes.findIndex(x => x.id === id);
+  if (idx >= 0) state.clientes[idx].activo = 1;
+  renderTablaClientes(_filtroClientes);
+  renderMisClientesGerente();
+  actualizarStatsGerente();
+  showToast(`✦ "${c.nombre}" reactivado`);
+}
+
+function editarCliente(id) {
+  const c = state.clientes.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('ec-id').value       = c.id;
+  document.getElementById('ec-nombre').value   = c.nombre;
+  document.getElementById('ec-tel').value      = c.tel;
+  document.getElementById('ec-email').value    = c.email || '';
+  document.getElementById('ec-alergias').value = c.alergias || '';
+  document.getElementById('ec-tipo').value     = c.tipo || 'antiguo';
+  // Poblar select de esteticistas
+  const sel = document.getElementById('ec-esteticista');
+  sel.innerHTML = obtenerPersonalAsignable()
+    .map(p => `<option value="${p.nombre}" ${p.nombre === c.esteticista ? 'selected' : ''}>${p.nombre}</option>`)
+    .join('');
+  abrirModal('modal-editar-cliente');
+}
+
+async function guardarEdicionCliente() {
+  const id      = parseInt(document.getElementById('ec-id').value);
+  const nombre  = document.getElementById('ec-nombre').value.trim();
+  const tel     = document.getElementById('ec-tel').value.trim();
+  const email   = document.getElementById('ec-email').value.trim();
+  const alergias   = document.getElementById('ec-alergias').value.trim() || 'Ninguna';
+  const tipo       = document.getElementById('ec-tipo').value;
+  const esteticista = document.getElementById('ec-esteticista').value;
+
+  if (!nombre || !tel) { showToast('⚠ Nombre y teléfono son obligatorios'); return; }
+
+  const idx = state.clientes.findIndex(c => c.id === id);
+  if (idx < 0) return;
+
+  const clienteActualizado = { ...state.clientes[idx], nombre, tel, email, alergias, tipo, esteticista };
+  await fetch(`/api/clientes/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(clienteActualizado),
+  });
+  state.clientes[idx] = clienteActualizado;
+
+  cerrarModal('modal-editar-cliente');
+  renderTablaClientes();
+  renderMisClientesGerente();
+  renderResumenNuevos();
+  showToast(`✦ Cliente "${nombre}" actualizado`);
+}
 
 function renderHistorialGlobal(filtro = '') {
   const tbody = document.getElementById('tbody-historial-global');
@@ -437,9 +549,7 @@ async function eliminarPersonal(id) {
   state.personal = state.personal.filter(p => p.id !== id);
 
   if (miembro && miembro.email) {
-    const usuarios  = obtenerUsuariosApp();
-    const filtrados = usuarios.filter(u => u.usuario.toLowerCase() !== miembro.email.toLowerCase());
-    localStorage.setItem('ts_usuarios_v2', JSON.stringify(filtrados));
+    await fetch(`/api/usuarios/${encodeURIComponent(miembro.email)}`, { method: 'DELETE' });
   }
 
   renderPersonalGrid();
@@ -448,12 +558,7 @@ async function eliminarPersonal(id) {
   showToast('Personal eliminado correctamente');
 }
 
-// Devuelve todos los usuarios del sistema con sus nombres exactos (igual que sesion.nombre)
 function obtenerPersonalAsignable() {
-  try {
-    const raw = localStorage.getItem('ts_usuarios_v2');
-    if (raw) return JSON.parse(raw).map(u => ({ nombre: u.nombre, cargo: u.rol }));
-  } catch {}
   return state.personal.map(p => ({ nombre: p.nombre, cargo: p.cargo }));
 }
 
@@ -516,8 +621,8 @@ async function agregarPersonal() {
   if (!password || password.length < 6) { showToast('⚠ La contraseña debe tener al menos 6 caracteres'); return; }
   if (password !== confirm) { showToast('⚠ Las contraseñas no coinciden'); return; }
 
-  const usuarios = obtenerUsuariosApp();
-  if (usuarios.some(u => u.usuario.toLowerCase() === usuario.toLowerCase())) {
+  const listaUsr = await obtenerUsuariosApp();
+  if (listaUsr.some(u => u.usuario.toLowerCase() === usuario.toLowerCase())) {
     showToast('⚠ Ese nombre de usuario ya está en uso'); return;
   }
 
@@ -527,8 +632,7 @@ async function agregarPersonal() {
 
   const hash = await sha256(password);
   const rol  = cargo === 'Gerente' ? 'gerente' : 'esteticista';
-  usuarios.push({ usuario, hash, rol, nombre });
-  localStorage.setItem('ts_usuarios_v2', JSON.stringify(usuarios));
+  await fetch('/api/usuarios', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ usuario, hash, rol, nombre }) });
 
   cerrarModal('modal-nuevo-personal');
   ['p-nombre','p-tel','p-usuario','p-password','p-confirm'].forEach(id => { document.getElementById(id).value = ''; });
@@ -996,7 +1100,7 @@ function cargarEsteticista() {
 function actualizarStatsEsteticista() {
   if (!state.sesionActual) return;
   const miNombre = state.sesionActual.nombre;
-  const misClientes    = state.clientes.filter(c => c.esteticista === miNombre).length;
+  const misClientes    = state.clientes.filter(c => c.esteticista === miNombre && c.activo !== 0 && c.activo !== '0').length;
   const misTratamientos = state.registros.filter(r => r.esteticista === miNombre).length;
   const elStat = document.getElementById('est-stat-clientes');
   const trStat = document.getElementById('est-stat-tratamientos');
@@ -1030,7 +1134,9 @@ function renderResumenEstRecientes() {
 function poblarSelectClientes() {
   const sel = document.getElementById('select-cliente-reg');
   sel.innerHTML = '<option value="">-- Elige un cliente --</option>' +
-    state.clientes.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+    state.clientes
+      .filter(c => c.activo !== 0 && c.activo !== '0')
+      .map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
 }
 
 function renderMisClientes(filtro = '') {
@@ -1038,6 +1144,7 @@ function renderMisClientes(filtro = '') {
   const miNombre = state.sesionActual ? state.sesionActual.nombre : '';
   const lista    = state.clientes.filter(c =>
     c.esteticista === miNombre &&
+    c.activo !== 0 && c.activo !== '0' &&
     c.nombre.toLowerCase().includes(filtro.toLowerCase())
   );
   if (!lista.length) { cont.innerHTML = '<p class="empty-msg">Sin clientes asignados.</p>'; return; }
@@ -2195,7 +2302,9 @@ function hcPoblarSelectClientes() {
   const sel = document.getElementById('hc-select-cliente');
   if (!sel) return;
   sel.innerHTML = '<option value="">-- Elige un cliente --</option>' +
-    state.clientes.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+    state.clientes
+      .filter(c => c.activo !== 0 && c.activo !== '0')
+      .map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
 }
 
 function hcSeleccionarTipo() {

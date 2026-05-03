@@ -25,7 +25,11 @@
       "Bash(node server.js)",
       "Bash(curl -s http://localhost:3000/Home/Home.html)",
       "Bash(taskkill /F /IM node.exe)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(npm install *)",
+      "Bash(del generar-doc.js)",
+      "Bash(npm uninstall *)",
+      "Bash(Remove-Item *)"
     ]
   }
 }

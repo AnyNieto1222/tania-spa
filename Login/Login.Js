@@ -26,24 +26,24 @@ async function sha256(texto) {
 }
 
 async function inicializarUsuarios() {
-  if (localStorage.getItem('ts_usuarios_v2')) return;
-  // Primera ejecución: hashear contraseñas y migrar datos viejos
-  localStorage.removeItem('usuario');
-  localStorage.removeItem('password');
-  localStorage.removeItem('sesion');
-  const usuarios = await Promise.all(
-    USUARIOS_DEFAULT.map(async u => ({
-      usuario: u.usuario,
-      hash:    await sha256(u.password),
-      rol:     u.rol,
-      nombre:  u.nombre,
-    }))
+  const res   = await fetch('/api/usuarios');
+  const lista = await res.json();
+  if (lista.length > 0) return;
+  await Promise.all(
+    USUARIOS_DEFAULT.map(async u => {
+      const hash = await sha256(u.password);
+      await fetch('/api/usuarios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuario: u.usuario, hash, rol: u.rol, nombre: u.nombre }),
+      });
+    })
   );
-  localStorage.setItem('ts_usuarios_v2', JSON.stringify(usuarios));
 }
 
-function obtenerUsuarios() {
-  return JSON.parse(localStorage.getItem('ts_usuarios_v2') || '[]');
+async function obtenerUsuarios() {
+  const res = await fetch('/api/usuarios');
+  return res.json();
 }
 
 // ============================================================
@@ -162,7 +162,7 @@ async function handleLogin() {
   if (!valid) return;
 
   const inputHash  = await sha256(password);
-  const usuarios   = obtenerUsuarios();
+  const usuarios   = await obtenerUsuarios();
   const encontrado = usuarios.find(u =>
     u.usuario.toLowerCase() === usuario.toLowerCase() &&
     u.hash === inputHash

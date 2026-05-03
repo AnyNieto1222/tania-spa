@@ -150,11 +150,12 @@
 
         <div class="search-bar">
           <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-          <input type="text" placeholder="Buscar por nombre o tipo..." oninput="filtrarTablaClientes(this.value)">
+          <input type="text" placeholder="Buscar por nombre, tipo o esteticista..." oninput="filtrarTablaClientes(this.value)">
+          <button class="btn-toggle-inactivos" id="btn-toggle-inactivos" onclick="toggleMostrarInactivos()">Mostrar inactivos</button>
         </div>
         <div class="tabla-wrap">
           <table class="dash-table">
-            <thead><tr><th>Cliente</th><th>Tipo</th><th>Teléfono</th><th>Alergias</th><th>Esteticista</th><th>Visitas</th><th>Próx. cita</th></tr></thead>
+            <thead><tr><th>Cliente</th><th>Tipo</th><th>Teléfono</th><th>Email</th><th>Alergias</th><th>Esteticista</th><th>Visitas</th><th>Próx. cita</th><th></th></tr></thead>
             <tbody id="tbody-clientes"></tbody>
           </table>
         </div>
@@ -803,6 +804,42 @@
       <div class="modal-footer">
         <button class="btn-cancel" onclick="cerrarModal('modal-nuevo-cliente')">Cancelar</button>
         <button class="btn-primary-dash" onclick="agregarClienteGerente()">Guardar cliente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDITAR CLIENTE -->
+  <div class="modal-overlay" id="modal-editar-cliente">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Editar cliente</h3>
+        <button class="modal-close" onclick="cerrarModal('modal-editar-cliente')">✕</button>
+      </div>
+      <input type="hidden" id="ec-id">
+      <div class="form-row-2">
+        <div class="form-group"><label>Nombre completo *</label><input type="text" id="ec-nombre" placeholder="Nombre Apellido"></div>
+        <div class="form-group"><label>Teléfono *</label><input type="tel" id="ec-tel" placeholder="+57 310 000-0000"></div>
+      </div>
+      <div class="form-row-2">
+        <div class="form-group"><label>Correo electrónico</label><input type="email" id="ec-email" placeholder="correo@ejemplo.com"></div>
+        <div class="form-group"><label>Alergias</label><input type="text" id="ec-alergias" placeholder="Ninguna"></div>
+      </div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="ec-tipo">
+            <option value="nuevo">Nuevo</option>
+            <option value="antiguo">Antiguo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Esteticista asignada</label>
+          <select id="ec-esteticista"></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="cerrarModal('modal-editar-cliente')">Cancelar</button>
+        <button class="btn-primary-dash" onclick="guardarEdicionCliente()">Guardar cambios</button>
       </div>
     </div>
   </div>

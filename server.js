@@ -22,7 +22,8 @@ async function initDB() {
     `CREATE TABLE IF NOT EXISTS clientes (
       id INTEGER PRIMARY KEY, nombre TEXT, tel TEXT, email TEXT, alergias TEXT,
       tipo TEXT, esteticista TEXT, visitas INTEGER DEFAULT 0,
-      proximaCita TEXT DEFAULT '', proxTrat TEXT DEFAULT ''
+      proximaCita TEXT DEFAULT '', proxTrat TEXT DEFAULT '',
+      activo INTEGER DEFAULT 1
     )`,
     `CREATE TABLE IF NOT EXISTS registros (
       id INTEGER PRIMARY KEY, fecha TEXT, clienteId INTEGER, clienteNombre TEXT, tipo TEXT,
@@ -53,6 +54,9 @@ async function initDB() {
       fechaPago TEXT DEFAULT '', observaciones TEXT DEFAULT '',
       fechaCreacion TEXT
     )`,
+    `CREATE TABLE IF NOT EXISTS usuarios (
+      usuario TEXT PRIMARY KEY, hash TEXT, rol TEXT, nombre TEXT
+    )`,
     `CREATE TABLE IF NOT EXISTS historias_corporales (
       id INTEGER PRIMARY KEY, nombre TEXT, cedula TEXT, fechaNacimiento TEXT, genero TEXT,
       estadoCivil TEXT, eps TEXT, rh TEXT, celular TEXT, direccion TEXT,
@@ -74,11 +78,32 @@ async function initDB() {
     `ALTER TABLE historias_corporales ADD COLUMN tipo TEXT DEFAULT 'corporal'`,
     `ALTER TABLE historias_corporales ADD COLUMN datosFacial TEXT DEFAULT '{}'`,
     `ALTER TABLE historias_corporales ADD COLUMN datosCapilar TEXT DEFAULT '{}'`,
+    `ALTER TABLE clientes ADD COLUMN activo INTEGER DEFAULT 1`,
   ];
   for (const sql of migrations) {
     try { await db.execute(sql); } catch (_) { /* columna ya existe */ }
   }
 }
+
+// ── USUARIOS (auth) ─────────────────────────────────────────────
+app.get('/api/usuarios', async (req, res) => {
+  const result = await db.execute('SELECT usuario, hash, rol, nombre FROM usuarios');
+  res.json(result.rows);
+});
+
+app.post('/api/usuarios', async (req, res) => {
+  const { usuario, hash, rol, nombre } = req.body;
+  await db.execute({
+    sql: 'INSERT OR IGNORE INTO usuarios VALUES (?,?,?,?)',
+    args: [usuario, hash, rol, nombre],
+  });
+  res.json({ ok: true });
+});
+
+app.delete('/api/usuarios/:usuario', async (req, res) => {
+  await db.execute({ sql: 'DELETE FROM usuarios WHERE usuario=?', args: [decodeURIComponent(req.params.usuario)] });
+  res.json({ ok: true });
+});
 
 // ── CLIENTES ────────────────────────────────────────────────────
 app.get('/api/clientes', async (req, res) => {
@@ -87,19 +112,19 @@ app.get('/api/clientes', async (req, res) => {
 });
 
 app.post('/api/clientes', async (req, res) => {
-  const { id, nombre, tel, email, alergias, tipo, esteticista, visitas, proximaCita, proxTrat } = req.body;
+  const { id, nombre, tel, email, alergias, tipo, esteticista, visitas, proximaCita, proxTrat, activo } = req.body;
   await db.execute({
-    sql: 'INSERT OR REPLACE INTO clientes VALUES (?,?,?,?,?,?,?,?,?,?)',
-    args: [id, nombre, tel, email || '', alergias || 'Ninguna', tipo, esteticista, visitas || 0, proximaCita || '', proxTrat || ''],
+    sql: 'INSERT OR REPLACE INTO clientes VALUES (?,?,?,?,?,?,?,?,?,?,?)',
+    args: [id, nombre, tel, email || '', alergias || 'Ninguna', tipo, esteticista, visitas || 0, proximaCita || '', proxTrat || '', activo ?? 1],
   });
   res.json(req.body);
 });
 
 app.put('/api/clientes/:id', async (req, res) => {
-  const { nombre, tel, email, alergias, tipo, esteticista, visitas, proximaCita, proxTrat } = req.body;
+  const { nombre, tel, email, alergias, tipo, esteticista, visitas, proximaCita, proxTrat, activo } = req.body;
   await db.execute({
-    sql: 'UPDATE clientes SET nombre=?,tel=?,email=?,alergias=?,tipo=?,esteticista=?,visitas=?,proximaCita=?,proxTrat=? WHERE id=?',
-    args: [nombre, tel, email || '', alergias || 'Ninguna', tipo, esteticista, visitas || 0, proximaCita || '', proxTrat || '', req.params.id],
+    sql: 'UPDATE clientes SET nombre=?,tel=?,email=?,alergias=?,tipo=?,esteticista=?,visitas=?,proximaCita=?,proxTrat=?,activo=? WHERE id=?',
+    args: [nombre, tel, email || '', alergias || 'Ninguna', tipo, esteticista, visitas || 0, proximaCita || '', proxTrat || '', activo ?? 1, req.params.id],
   });
   res.json({ ok: true });
 });
