@@ -205,7 +205,7 @@ function showTab(dash, tab, link) {
   if (target) target.classList.add('active');
   if (link && link.classList) link.classList.add('active');
   if (dash === 'gerente' && tab === 'resumen') { actualizarStatsGerente(); renderResumenRecientes(); renderResumenNuevos(); renderPersonalActividad(); }
-  if (dash === 'gerente' && tab === 'estadisticas') renderEstadisticas();
+  if (dash === 'gerente' && tab === 'estadisticas') refrescarYRenderEstadisticas();
   if (dash === 'gerente' && tab === 'clientes') renderMisClientesGerente();
   if (dash === 'esteticista' && tab === 'resumen') { actualizarStatsEsteticista(); renderResumenEstRecientes(); }
   if (dash === 'gerente' && tab === 'citas') { renderEstadosCitas(); renderTablaCitas(); }
@@ -995,6 +995,16 @@ function recogerDatosEspecificos() {
 // ============================================================
 //  GRÁFICAS POR PROFESIONAL
 // ============================================================
+async function refrescarYRenderEstadisticas() {
+  const [registros, personal] = await Promise.all([
+    fetch('/api/registros').then(r => r.json()),
+    fetch('/api/personal').then(r => r.json()),
+  ]);
+  state.registros = registros;
+  state.personal  = personal;
+  renderEstadisticas();
+}
+
 function renderEstadisticas() {
   // Destruir instancias anteriores para evitar conflictos
   Object.keys(chartInstances).forEach(k => {
@@ -2204,10 +2214,10 @@ async function abrirModalComision(id = null) {
   const thProd = document.getElementById('thead-com-productos-row');
   if (thServ) thServ.innerHTML = esGerente
     ? '<th>Fecha</th><th>Cliente</th><th>Servicio</th><th>Valor ($)</th><th>% Comisión</th><th>Comisión ($)</th><th></th>'
-    : '<th>Fecha</th><th>Cliente</th><th>Servicio</th><th></th>';
+    : '<th>Fecha</th><th>Cliente</th><th>Servicio</th><th>Valor</th><th>Comisión</th><th></th>';
   if (thProd) thProd.innerHTML = esGerente
     ? '<th>Producto</th><th>Cant.</th><th>Precio unit. ($)</th><th>% Comisión</th><th>Comisión ($)</th><th></th>'
-    : '<th>Producto</th><th>Cant.</th><th></th>';
+    : '<th>Producto</th><th>Cant.</th><th>Precio unit.</th><th>Comisión</th><th></th>';
 
   // ── Resumen y control de pago: solo gerente ───────────────
   const resumen  = document.getElementById('com-resumen-box');
@@ -2235,16 +2245,29 @@ function renderFilasServiciosComision() {
   const esGerente = state.sesionActual?.rol === 'gerente' || state.sesionActual?.rol === 'administradora';
   const tbody = document.getElementById('tbody-com-servicios');
   if (!tbody) return;
-  const cols = esGerente ? 7 : 4;
+  const cols = esGerente ? 7 : 6;
+  const optsServicios = Object.keys(PRECIOS).map(s =>
+    `<option value="${s}" ${s === '?' ? '' : ''}>${s}</option>`
+  ).join('');
   tbody.innerHTML = filasServiciosComision.map((f, i) => `
     <tr>
       <td><input type="date" class="td-input" value="${f.fecha}" onchange="updateFilaServicio(${i},'fecha',this.value)"></td>
       <td><input type="text" class="td-input" value="${f.cliente}" placeholder="Cliente" onchange="updateFilaServicio(${i},'cliente',this.value)"></td>
-      <td><input type="text" class="td-input" value="${f.servicio}" placeholder="Servicio" onchange="updateFilaServicio(${i},'servicio',this.value)" oninput="autoValorServicio(${i},this.value)"></td>
+      <td>
+        ${esGerente
+          ? `<input type="text" class="td-input" value="${f.servicio}" placeholder="Servicio" onchange="updateFilaServicio(${i},'servicio',this.value)" oninput="autoValorServicio(${i},this.value)">`
+          : `<select class="td-input" onchange="autoValorServicio(${i},this.value)">
+               <option value="">-- Selecciona --</option>
+               ${optsServicios.replace(`value="${f.servicio}"`, `value="${f.servicio}" selected`)}
+             </select>`
+        }
+      </td>
       ${esGerente ? `
       <td><input type="number" class="td-input td-num" min="0" value="${f.valor}" onchange="updateFilaServicio(${i},'valor',+this.value)"></td>
       <td><input type="number" class="td-input td-num" min="0" max="100" value="${f.pct}" onchange="updateFilaServicio(${i},'pct',+this.value)"></td>
-      <td class="td-comision">${formatCOP(f.comision)}</td>` : ''}
+      <td class="td-comision">${formatCOP(f.comision)}</td>` : `
+      <td class="td-comision" style="color:var(--text-soft);font-size:.75rem">${f.valor ? formatCOP(f.valor) : '—'}</td>
+      <td class="td-comision">${formatCOP(f.comision)}</td>`}
       <td><button class="btn-accion btn-cancelar" onclick="eliminarFilaServicio(${i})" title="Eliminar">✕</button></td>
     </tr>`).join('') || `<tr><td colspan="${cols}" style="text-align:center;color:var(--text-soft);padding:1rem;font-size:.8rem">Sin servicios aún — pulsa "+ Agregar servicio"</td></tr>`;
 }
@@ -2253,17 +2276,40 @@ function renderFilasProductosComision() {
   const esGerente = state.sesionActual?.rol === 'gerente' || state.sesionActual?.rol === 'administradora';
   const tbody = document.getElementById('tbody-com-productos');
   if (!tbody) return;
-  const cols = esGerente ? 6 : 3;
+  const cols = esGerente ? 6 : 5;
+  const optsInv = state.inventario.length
+    ? state.inventario.map(p => `<option value="${p.descripcion}" data-precio="${p.costoUnitario}">${p.descripcion}</option>`).join('')
+    : '';
   tbody.innerHTML = filasProductosComision.map((f, i) => `
     <tr>
-      <td><input type="text" class="td-input" value="${f.producto}" placeholder="Producto" onchange="updateFilaProducto(${i},'producto',this.value)"></td>
+      <td>
+        ${esGerente
+          ? `<input type="text" class="td-input" value="${f.producto}" placeholder="Producto" onchange="updateFilaProducto(${i},'producto',this.value)">`
+          : `<select class="td-input" onchange="seleccionarProductoComision(${i},this)">
+               <option value="">-- Selecciona --</option>
+               ${optsInv.replace(`value="${f.producto}"`, `value="${f.producto}" selected`)}
+             </select>`
+        }
+      </td>
       <td><input type="number" class="td-input td-num" min="1" value="${f.cantidad}" onchange="updateFilaProducto(${i},'cantidad',+this.value)"></td>
       ${esGerente ? `
       <td><input type="number" class="td-input td-num" min="0" value="${f.precio}" onchange="updateFilaProducto(${i},'precio',+this.value)"></td>
       <td><input type="number" class="td-input td-num" min="0" max="100" value="${f.pct}" onchange="updateFilaProducto(${i},'pct',+this.value)"></td>
-      <td class="td-comision">${formatCOP(f.comision)}</td>` : ''}
+      <td class="td-comision">${formatCOP(f.comision)}</td>` : `
+      <td class="td-comision" style="color:var(--text-soft);font-size:.75rem">${f.precio ? formatCOP(f.precio) : '—'}</td>
+      <td class="td-comision">${formatCOP(f.comision)}</td>`}
       <td><button class="btn-accion btn-cancelar" onclick="eliminarFilaProducto(${i})" title="Eliminar">✕</button></td>
     </tr>`).join('') || `<tr><td colspan="${cols}" style="text-align:center;color:var(--text-soft);padding:1rem;font-size:.8rem">Sin productos aún</td></tr>`;
+}
+
+function seleccionarProductoComision(i, sel) {
+  const opt    = sel.options[sel.selectedIndex];
+  const precio = +(opt?.dataset?.precio || 0);
+  filasProductosComision[i].producto = sel.value;
+  filasProductosComision[i].precio   = precio;
+  filasProductosComision[i].comision = Math.round(precio * filasProductosComision[i].cantidad * filasProductosComision[i].pct / 100);
+  renderFilasProductosComision();
+  recalcularComision();
 }
 
 function updateFilaServicio(i, campo, valor) {
