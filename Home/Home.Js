@@ -476,9 +476,10 @@ function editarCliente(id) {
   document.getElementById('ec-tipo').value     = c.tipo || 'antiguo';
   // Poblar select de esteticistas
   const sel = document.getElementById('ec-esteticista');
-  sel.innerHTML = obtenerPersonalAsignable()
-    .map(p => `<option value="${p.nombre}" ${p.nombre === c.esteticista ? 'selected' : ''}>${p.nombre}</option>`)
-    .join('');
+  sel.innerHTML = `<option value="No asignado" ${'No asignado' === c.esteticista || !c.esteticista ? 'selected' : ''}>No asignado</option>` +
+    obtenerPersonalAsignable()
+      .map(p => `<option value="${p.nombre}" ${p.nombre === c.esteticista ? 'selected' : ''}>${p.nombre}</option>`)
+      .join('');
   abrirModal('modal-editar-cliente');
 }
 
@@ -577,9 +578,10 @@ function obtenerPersonalAsignable() {
 function renderSelectEsteticistas() {
   const sel = document.getElementById('g-esteticista');
   if (!sel) return;
-  sel.innerHTML = obtenerPersonalAsignable()
-    .map(p => `<option value="${p.nombre}">${p.nombre}</option>`)
-    .join('');
+  sel.innerHTML = '<option value="No asignado">No asignado</option>' +
+    obtenerPersonalAsignable()
+      .map(p => `<option value="${p.nombre}">${p.nombre}</option>`)
+      .join('');
 }
 
 async function agregarClienteGerente() {
@@ -1494,11 +1496,24 @@ function renderIngresos() {
   const mP = mA === 0 ? 11 : mA - 1;
   const aP = mA === 0 ? aA - 1 : aA;
 
-  const regsMes      = state.registros.filter(r => { const d = new Date(r.fecha); return d.getMonth()===mA && d.getFullYear()===aA; });
-  const regsAnterior = state.registros.filter(r => { const d = new Date(r.fecha); return d.getMonth()===mP && d.getFullYear()===aP; });
+  // Recopilar pagos reales (abonos) de historias corporales
+  const todosLosPagos = [];
+  state.historiasCorporales.forEach(h => {
+    (Array.isArray(h.abonos) ? h.abonos : []).forEach(ab => {
+      todosLosPagos.push({
+        nombre:      h.nombre || '—',
+        tratamiento: h.tratamientoDescripcion || '—',
+        monto:       parseFloat(ab.monto) || 0,
+        fecha:       ab.fecha || '',
+      });
+    });
+  });
 
-  const totalMes      = regsMes.reduce((s,r) => s + (PRECIOS[r.tratamiento]||0), 0);
-  const totalAnterior = regsAnterior.reduce((s,r) => s + (PRECIOS[r.tratamiento]||0), 0);
+  const pagosMes      = todosLosPagos.filter(p => { const d = new Date(p.fecha); return d.getMonth()===mA && d.getFullYear()===aA; });
+  const pagosAnterior = todosLosPagos.filter(p => { const d = new Date(p.fecha); return d.getMonth()===mP && d.getFullYear()===aP; });
+
+  const totalMes      = pagosMes.reduce((s,p) => s + p.monto, 0);
+  const totalAnterior = pagosAnterior.reduce((s,p) => s + p.monto, 0);
 
   let crecimientoStr = '—';
   let crecPorcentaje = null;
@@ -1507,12 +1522,10 @@ function renderIngresos() {
     crecimientoStr = `${+crecPorcentaje >= 0 ? '+' : ''}${crecPorcentaje}%`;
   }
 
-  // Stats cards con hint y cursor
-  document.getElementById('stat-ingresos-mes').textContent        = formatCOP(totalMes);
-  document.getElementById('stat-ingresos-anterior').textContent   = formatCOP(totalAnterior);
+  document.getElementById('stat-ingresos-mes').textContent         = formatCOP(totalMes);
+  document.getElementById('stat-ingresos-anterior').textContent    = formatCOP(totalAnterior);
   document.getElementById('stat-ingresos-crecimiento').textContent = crecimientoStr;
 
-  // Agregar hints y cursor a las tarjetas
   const cards = document.querySelectorAll('#gerente-ingresos .stat-card');
   cards.forEach(c => {
     if (!c.querySelector('.stat-hint')) {
@@ -1523,46 +1536,37 @@ function renderIngresos() {
     }
   });
 
-  // Asignar clicks
   if (cards[0]) cards[0].onclick = () => toggleIngresosPanel('panel-ingresos-mes');
   if (cards[1]) cards[1].onclick = () => toggleIngresosPanel('panel-ingresos-anterior');
   if (cards[2]) cards[2].onclick = () => toggleIngresosPanel('panel-ingresos-crec');
 
-  // Nombres de meses
   const nombresMes = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
                       'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-  // ── Función reutilizable para tabla de desglose ──
-  function tablaDesglose(regs) {
-    const total = regs.reduce((s,r) => s + (PRECIOS[r.tratamiento]||0), 0);
-    if (!regs.length) return '<p class="empty-msg">Sin registros en este período.</p>';
-    const porTrat = {};
-    regs.forEach(r => { porTrat[r.tratamiento] = (porTrat[r.tratamiento]||0)+1; });
-    const filas = Object.entries(porTrat).map(([trat, count]) => {
-      const precio = PRECIOS[trat]||0;
-      return `<tr><td>${trat}</td><td>${count}</td><td>${formatCOP(precio)}</td><td>${formatCOP(precio*count)}</td></tr>`;
-    }).join('');
+  function tablaDesglose(pagos) {
+    const total = pagos.reduce((s,p) => s + p.monto, 0);
+    if (!pagos.length) return '<p class="empty-msg">Sin pagos registrados en este período.</p>';
+    const filas = [...pagos].sort((a,b) => b.fecha.localeCompare(a.fecha)).map(p =>
+      `<tr><td>${formatFecha(p.fecha)}</td><td>${p.nombre}</td><td>${p.tratamiento}</td><td>${formatCOP(p.monto)}</td></tr>`
+    ).join('');
     return `<table class="dash-table">
-      <thead><tr><th>Tratamiento</th><th>Sesiones</th><th>Valor unit.</th><th>Total</th></tr></thead>
+      <thead><tr><th>Fecha</th><th>Cliente</th><th>Tratamiento</th><th>Abono</th></tr></thead>
       <tbody>${filas}
         <tr class="total-row"><td colspan="3"><strong>Total</strong></td><td><strong>${formatCOP(total)}</strong></td></tr>
       </tbody></table>`;
   }
 
-  // ── Panel: Este mes ──
   injectPanel('panel-ingresos-mes',
     `Desglose — ${nombresMes[mA]} ${aA}`,
-    tablaDesglose(regsMes)
+    tablaDesglose(pagosMes)
   );
 
-  // ── Panel: Mes anterior ──
   injectPanel('panel-ingresos-anterior',
     `Desglose — ${nombresMes[mP]} ${aP}`,
-    tablaDesglose(regsAnterior)
+    tablaDesglose(pagosAnterior)
   );
 
-  // ── Panel: Crecimiento ──
-  const promedio = regsMes.length ? Math.round(totalMes / regsMes.length) : 0;
+  const promedio = pagosMes.length ? Math.round(totalMes / pagosMes.length) : 0;
   const badgeCrec = crecPorcentaje !== null
     ? (+crecPorcentaje >= 0
         ? `<span style="background:rgba(209,250,229,.5);color:#065f46;border:1px solid rgba(110,231,183,.4);font-size:.72rem;padding:.2rem .6rem;border-radius:20px">+${crecPorcentaje}%</span>`
@@ -1575,25 +1579,28 @@ function renderIngresos() {
       <div class="crec-fila"><span class="crec-fila-label">${nombresMes[mA]} ${aA}</span><span class="crec-fila-val">${formatCOP(totalMes)}</span></div>
       <div class="crec-fila"><span class="crec-fila-label">${nombresMes[mP]} ${aP}</span><span class="crec-fila-val">${formatCOP(totalAnterior)}</span></div>
       <div class="crec-fila"><span class="crec-fila-label">Variación</span>${badgeCrec}</div>
-      <div class="crec-fila"><span class="crec-fila-label">Sesiones este mes</span><span class="crec-fila-val">${regsMes.length}</span></div>
-      <div class="crec-fila"><span class="crec-fila-label">Promedio por sesión</span><span class="crec-fila-val">${formatCOP(promedio)}</span></div>
+      <div class="crec-fila"><span class="crec-fila-label">Pagos este mes</span><span class="crec-fila-val">${pagosMes.length}</span></div>
+      <div class="crec-fila"><span class="crec-fila-label">Promedio por pago</span><span class="crec-fila-val">${formatCOP(promedio)}</span></div>
     </div>`
   );
 
-  // Tabla principal (debajo de los paneles — existente en el HTML)
   document.getElementById('ingresos-titulo-mes').textContent =
-    `Ingresos por tratamiento — ${nombresMes[mA]} ${aA}`;
+    `Ingresos recibidos — ${nombresMes[mA]} ${aA}`;
 
+  // Tabla principal: agrupar pagos del mes por cliente
   const tbody = document.getElementById('tbody-ingresos');
-  const porTrat = {};
-  regsMes.forEach(r => { porTrat[r.tratamiento] = (porTrat[r.tratamiento]||0)+1; });
-  const filas = Object.entries(porTrat).map(([trat, count]) => {
-    const precio = PRECIOS[trat]||0;
-    return `<tr><td>${trat}</td><td>${count}</td><td>${formatCOP(precio)}</td><td>${formatCOP(precio*count)}</td></tr>`;
+  const porCliente = {};
+  pagosMes.forEach(p => {
+    if (!porCliente[p.nombre]) porCliente[p.nombre] = { nombre: p.nombre, tratamiento: p.tratamiento, total: 0, pagos: 0 };
+    porCliente[p.nombre].total += p.monto;
+    porCliente[p.nombre].pagos += 1;
   });
+  const filas = Object.values(porCliente).map(c =>
+    `<tr><td>${c.nombre}</td><td>${c.tratamiento}</td><td>${c.pagos}</td><td>${formatCOP(c.total)}</td></tr>`
+  );
   tbody.innerHTML = filas.length
     ? filas.join('') + `<tr class="total-row"><td colspan="3"><strong>Total</strong></td><td><strong>${formatCOP(totalMes)}</strong></td></tr>`
-    : '<tr><td colspan="4" style="text-align:center;color:var(--text-soft);padding:1.5rem">Sin registros este mes</td></tr>';
+    : '<tr><td colspan="4" style="text-align:center;color:var(--text-soft);padding:1.5rem">Sin pagos este mes</td></tr>';
 }
 
 // ── Helpers de paneles desplegables ──
@@ -1740,7 +1747,7 @@ function poblarSelectsEsteticistaCita(selectId) {
   const sel = document.getElementById(selectId);
   if (!sel) return;
   const rolesLabel = { esteticista: 'Esteticista', gerente: 'Gerente', administradora: 'Administradora' };
-  sel.innerHTML = '<option value="">-- Selecciona --</option>' +
+  sel.innerHTML = '<option value="No asignado">No asignado</option>' +
     obtenerPersonalAsignable()
       .map(p => `<option value="${p.nombre}">${p.nombre} (${rolesLabel[p.cargo] || p.cargo})</option>`)
       .join('');
@@ -3229,9 +3236,11 @@ function calSeleccionarDia(fechaStr) {
   const citasHtml = citas.length === 0
     ? '<p class="cal-sin-citas">No hay citas para este día.</p>'
     : citas.map(c => {
-        const opts = personal.map(p =>
-          `<option value="${p.nombre}" ${p.nombre === c.esteticista ? 'selected' : ''}>${p.nombre}</option>`
-        ).join('');
+        const noAsig = (!c.esteticista || c.esteticista === 'No asignado') ? 'selected' : '';
+        const opts = `<option value="No asignado" ${noAsig}>No asignado</option>` +
+          personal.map(p =>
+            `<option value="${p.nombre}" ${p.nombre === c.esteticista ? 'selected' : ''}>${p.nombre}</option>`
+          ).join('');
         return `<div class="cal-cita-card">
           <div class="cal-cita-hora">${c.hora || '—'}</div>
           <div class="cal-cita-info">

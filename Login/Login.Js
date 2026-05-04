@@ -26,27 +26,39 @@ async function sha256(texto) {
 }
 
 async function inicializarUsuarios() {
-  const res   = await fetch('/api/usuarios');
-  const lista = await res.json();
+  const [res, resPersonal] = await Promise.all([
+    fetch('/api/usuarios'),
+    fetch('/api/personal'),
+  ]);
+  const lista    = await res.json();
+  const personal = await resPersonal.json();
 
+  // Agregar usuarios por defecto que no existan aún
   await Promise.all(
     USUARIOS_DEFAULT.map(async u => {
       const existe = lista.find(x => x.usuario === u.usuario);
       if (existe) return;
-
       const hash = await sha256(u.password);
-
       await fetch('/api/usuarios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          usuario: u.usuario,
-          hash,
-          rol: u.rol,
-          nombre: u.nombre
-        }),
+        body: JSON.stringify({ usuario: u.usuario, hash, rol: u.rol, nombre: u.nombre }),
       });
     })
+  );
+
+  // Eliminar usuarios obsoletos: no están en USUARIOS_DEFAULT
+  // y tampoco fueron agregados como personal real (por su email)
+  const defaultSet   = new Set(USUARIOS_DEFAULT.map(u => u.usuario.toLowerCase()));
+  const personalEmails = new Set(personal.map(p => (p.email || '').toLowerCase()));
+  const obsoletos = lista.filter(u =>
+    !defaultSet.has(u.usuario.toLowerCase()) &&
+    !personalEmails.has(u.usuario.toLowerCase())
+  );
+  await Promise.all(
+    obsoletos.map(u =>
+      fetch(`/api/usuarios/${encodeURIComponent(u.usuario)}`, { method: 'DELETE' })
+    )
   );
 }
 
