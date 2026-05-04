@@ -53,6 +53,9 @@
         <a class="nav-item" onclick="showTab('gerente','historia-corporal',this)">
           <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>Historiales Clínicos
         </a>
+        <a class="nav-item" onclick="showTab('gerente','calendario',this)">
+          <svg viewBox="0 0 24 24"><path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg>Calendario
+        </a>
       </nav>
       <button class="sidebar-logout" onclick="salir()">
         <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>Salir
@@ -336,6 +339,32 @@
         </div>
       </div>
 
+      <!-- CALENDARIO (gerente) -->
+      <div id="gerente-calendario" class="tab-content">
+        <div class="dash-header">
+          <div><p class="dash-label">✦ Agenda</p><h1 class="dash-title">Calendario</h1></div>
+        </div>
+        <div class="cal-layout">
+          <div class="cal-panel">
+            <div class="cal-nav">
+              <button class="cal-nav-btn" onclick="calNavMes(-1)">‹</button>
+              <span class="cal-mes-titulo" id="cal-g-titulo"></span>
+              <button class="cal-nav-btn" onclick="calNavMes(1)">›</button>
+            </div>
+            <div class="cal-semana-headers">
+              <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
+            </div>
+            <div class="cal-grid" id="cal-g-grid"></div>
+          </div>
+          <div class="cal-detalle-panel" id="cal-g-detalle">
+            <div class="cal-detalle-empty">
+              <svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+              <p>Selecciona un día para ver sus citas</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- HISTORIALES CLÍNICOS (gerente) -->
       <div id="gerente-historia-corporal" class="tab-content">
         <div class="dash-header">
@@ -395,6 +424,9 @@
         </a>
         <a class="nav-item" onclick="showTab('esteticista','hc-corporal',this)">
           <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>Historiales Clínicos
+        </a>
+        <a class="nav-item" onclick="showTab('esteticista','calendario',this)">
+          <svg viewBox="0 0 24 24"><path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg>Calendario
         </a>
       </nav>
       <button class="sidebar-logout" onclick="salir()">
@@ -825,6 +857,32 @@
             <thead><tr><th>Fecha</th><th>Cliente</th><th>Tipo</th><th>Tratamiento</th><th>Productos</th><th>Notas</th><th>Próx. cita</th></tr></thead>
             <tbody id="tbody-mi-historial"></tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- CALENDARIO (esteticista) -->
+      <div id="esteticista-calendario" class="tab-content">
+        <div class="dash-header">
+          <div><p class="dash-label">✦ Agenda</p><h1 class="dash-title">Calendario</h1></div>
+        </div>
+        <div class="cal-layout">
+          <div class="cal-panel">
+            <div class="cal-nav">
+              <button class="cal-nav-btn" onclick="calNavMes(-1)">‹</button>
+              <span class="cal-mes-titulo" id="cal-e-titulo"></span>
+              <button class="cal-nav-btn" onclick="calNavMes(1)">›</button>
+            </div>
+            <div class="cal-semana-headers">
+              <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
+            </div>
+            <div class="cal-grid" id="cal-e-grid"></div>
+          </div>
+          <div class="cal-detalle-panel" id="cal-e-detalle">
+            <div class="cal-detalle-empty">
+              <svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>
+              <p>Selecciona un día para ver sus citas</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1424,7 +1482,7 @@
         <div class="com-grid-3">
           <div class="form-group"><label>Nombre completo *</label><input type="text" id="hc-nombre" placeholder="Nombre Apellido"></div>
           <div class="form-group"><label>Cédula *</label><input type="text" id="hc-cedula" placeholder="1234567890"></div>
-          <div class="form-group"><label>Fecha de nacimiento</label><input type="date" id="hc-fecha-nac" oninput="calcularEdadHC()"></div>
+          <div class="form-group"><label>Fecha de nacimiento</label><input type="date" id="hc-fecha-nac" oninput="calcularEdadHC()" onchange="calcularEdadHC()"></div>
         </div>
         <div class="com-grid-3">
           <div class="form-group"><label>Edad</label><input type="text" id="hc-edad" readonly placeholder="Auto-calculada" style="background:var(--rose-light);opacity:.8"></div>
@@ -1480,7 +1538,7 @@
         </div>
         <p class="form-section-title" style="margin-top:.75rem">Información ginecológica</p>
         <div class="com-grid-3">
-          <div class="form-group"><label>FUR (fecha última regla)</label><input type="date" id="hc-fur"></div>
+          <div class="form-group"><label>FUP (fecha último parto)</label><input type="date" id="hc-fur"></div>
           <div class="form-group"><label>Partos</label><input type="number" id="hc-partos" min="0" value="0"></div>
           <div class="form-group"><label>Planificación</label><input type="text" id="hc-planificacion" placeholder="Ej: DIU, hormonal, ninguna"></div>
         </div>
@@ -1718,19 +1776,24 @@
           <div class="form-group"><label>Músculo total (%)</label><input type="number" id="hc-musculo-total" step="0.1"></div>
           <div class="form-group"><label>Grasa visceral</label><input type="number" id="hc-grasa-visceral" step="0.1"></div>
         </div>
-        <p class="form-section-title" style="margin-top:.75rem">Mediciones corporales (cm)</p>
+        <p class="form-section-title" style="margin-top:.75rem">Adipometría (mm)</p>
         <div class="mediciones-grid">
           <div class="form-group"><label>Espalda alta</label><input type="number" id="med-espalda-alta" step="0.1"></div>
           <div class="form-group"><label>Espalda baja</label><input type="number" id="med-espalda-baja" step="0.1"></div>
           <div class="form-group"><label>Supra ilíaco</label><input type="number" id="med-supra-iliaco" step="0.1"></div>
           <div class="form-group"><label>Adipometría total</label><input type="number" id="med-adipo-total" step="0.1"></div>
+        </div>
+        <p class="form-section-title" style="margin-top:.75rem">Cinta métrica (cm)</p>
+        <div class="mediciones-grid">
+          <div class="form-group"><label>Abdomen alto</label><input type="number" id="med-abdomen-alto" step="0.1"></div>
+          <div class="form-group"><label>Cintura</label><input type="number" id="med-cintura" step="0.1"></div>
           <div class="form-group"><label>Abdomen bajo</label><input type="number" id="med-abdomen-bajo" step="0.1"></div>
           <div class="form-group"><label>Cadera</label><input type="number" id="med-cadera" step="0.1"></div>
           <div class="form-group"><label>Muslo alto</label><input type="number" id="med-muslo-alto" step="0.1"></div>
           <div class="form-group"><label>Muslo medio</label><input type="number" id="med-muslo-medio" step="0.1"></div>
           <div class="form-group"><label>Derrier</label><input type="number" id="med-derrier" step="0.1"></div>
           <div class="form-group"><label>Caída</label><input type="number" id="med-caida" step="0.1"></div>
-          <div class="form-group"><label>Volumen</label><input type="number" id="med-volumen" step="0.1"></div>
+          <div class="form-group"><label>Columen</label><input type="number" id="med-volumen" step="0.1"></div>
           <div class="form-group"><label>Total</label><input type="number" id="med-total" step="0.1"></div>
         </div>
         <div class="step-nav">
@@ -1756,10 +1819,14 @@
         <div class="form-group"><label>Observaciones</label><textarea id="fc-observaciones" placeholder="Notas del profesional..."></textarea></div>
 
         <p class="form-section-title" style="margin-top:.5rem">Control de pagos</p>
+        <div id="fc-info-saldo-ant" style="display:none;background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:.6rem 1rem;margin-bottom:.75rem">
+          <p style="margin:0;font-size:.82rem;color:#b91c1c;font-weight:600">Saldo pendiente de sesión anterior:</p>
+          <input type="text" id="fc-saldo-ant-display" readonly style="border:none;background:transparent;font-size:1.1rem;font-weight:700;color:#b91c1c;width:100%;padding:0">
+        </div>
         <div class="com-grid-3">
           <div class="form-group"><label>N° sesiones</label><input type="number" id="fc-num-sesiones" min="1" value="1"></div>
           <div class="form-group"><label>Valor total ($)</label><input type="number" id="fc-valor-total" min="0" value="0" oninput="calcularSaldoFC()"></div>
-          <div class="form-group"><label>Abono inicial ($)</label><input type="number" id="fc-abono-nuevo" min="0" value="0" oninput="calcularSaldoFC()"></div>
+          <div class="form-group"><label id="lbl-fc-abono">Abono inicial ($)</label><input type="number" id="fc-abono-nuevo" min="0" value="0" oninput="calcularSaldoFC()"></div>
         </div>
         <div class="com-grid-2">
           <div class="form-group"><label>Saldo pendiente</label><input type="text" id="fc-saldo" readonly style="background:var(--rose-light);opacity:.8"></div>
@@ -1805,9 +1872,13 @@
         </div>
 
         <p class="form-section-title" style="margin-top:.5rem">Control de pagos</p>
+        <div id="hc-info-saldo-ant" style="display:none;background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:.6rem 1rem;margin-bottom:.75rem">
+          <p style="margin:0;font-size:.82rem;color:#b91c1c;font-weight:600">Saldo pendiente de sesión anterior:</p>
+          <input type="text" id="hc-saldo-ant-display" readonly style="border:none;background:transparent;font-size:1.1rem;font-weight:700;color:#b91c1c;width:100%;padding:0">
+        </div>
         <div class="com-grid-3">
           <div class="form-group"><label>Valor total ($)</label><input type="number" id="hc-valor-total" min="0" value="0" oninput="calcularSaldoHC()"></div>
-          <div class="form-group"><label>Abono inicial ($)</label><input type="number" id="hc-abono-nuevo" min="0" value="0" oninput="calcularSaldoHC()"></div>
+          <div class="form-group"><label id="lbl-hc-abono">Abono inicial ($)</label><input type="number" id="hc-abono-nuevo" min="0" value="0" oninput="calcularSaldoHC()"></div>
           <div class="form-group"><label>Saldo pendiente</label><input type="text" id="hc-saldo" readonly style="background:var(--rose-light);opacity:.8"></div>
         </div>
 

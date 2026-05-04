@@ -821,3 +821,82 @@ body { font-family:'Jost',sans-serif; background:var(--cream); color:var(--text-
   border:1px solid var(--rose-light);
 }
 .fitz-svg { display:block; width:100%; height:auto; }
+/* ===== CALENDARIO ===== */
+.cal-layout { display:grid; grid-template-columns:1fr 340px; gap:1.5rem; align-items:start; }
+.cal-panel {
+  background:var(--white); border-radius:16px; padding:1.5rem;
+  box-shadow:0 2px 12px rgba(124,77,138,.08); border:1px solid var(--rose-light);
+}
+.cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; }
+.cal-nav-btn {
+  background:var(--rose-light); border:none; border-radius:8px;
+  width:36px; height:36px; font-size:1.3rem; color:var(--plum-dark);
+  cursor:pointer; transition:background .2s; line-height:1;
+}
+.cal-nav-btn:hover { background:var(--plum-light); }
+.cal-mes-titulo {
+  font-family:'Cormorant Garamond',serif; font-size:1.3rem;
+  font-weight:600; color:var(--plum-dark); text-transform:capitalize;
+}
+.cal-semana-headers {
+  display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:6px;
+}
+.cal-semana-headers span {
+  text-align:center; font-size:.68rem; font-weight:600;
+  color:var(--text-soft); text-transform:uppercase; letter-spacing:.06em; padding:.2rem 0;
+}
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.cal-dia {
+  min-height:54px; background:var(--cream); border-radius:10px;
+  padding:.35rem; cursor:pointer; transition:background .15s,transform .1s;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  border:1.5px solid transparent;
+}
+.cal-dia:hover:not(.otro-mes) { background:var(--rose-light); transform:scale(1.05); }
+.cal-dia.otro-mes { opacity:.3; cursor:default; pointer-events:none; }
+.cal-dia.hoy { background:var(--rose-light); border-color:var(--rose-dark); }
+.cal-dia.hoy .cal-dia-num { color:var(--rose-dark); font-weight:700; }
+.cal-dia.seleccionado { background:var(--plum); border-color:var(--plum-dark); }
+.cal-dia.seleccionado .cal-dia-num { color:#fff; }
+.cal-dia.seleccionado .cal-badge { background:#fff; color:var(--plum-dark); }
+.cal-dia-num { font-size:.82rem; font-weight:500; color:var(--text-dark); }
+.cal-badge {
+  background:var(--rose-dark); color:#fff; font-size:.6rem; font-weight:700;
+  border-radius:10px; padding:1px 6px; min-width:18px; text-align:center;
+}
+.cal-detalle-panel {
+  background:var(--white); border-radius:16px; padding:1.25rem;
+  box-shadow:0 2px 12px rgba(124,77,138,.08); border:1px solid var(--rose-light);
+  min-height:420px; max-height:75vh; overflow-y:auto; position:sticky; top:1rem;
+}
+.cal-detalle-empty {
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:center; height:300px; gap:.75rem; color:var(--text-soft);
+  font-size:.85rem; text-align:center;
+}
+.cal-detalle-empty svg { width:44px; height:44px; fill:var(--rose-light); }
+.cal-detalle-titulo {
+  font-family:'Cormorant Garamond',serif; font-size:1.15rem;
+  font-weight:600; color:var(--plum-dark); text-transform:capitalize; margin-bottom:.2rem;
+}
+.cal-detalle-count { font-size:.73rem; color:var(--text-soft); margin-bottom:1rem; }
+.cal-sin-citas { text-align:center; color:var(--text-soft); font-size:.85rem; padding:2rem 0; }
+.cal-citas-lista { display:flex; flex-direction:column; gap:.75rem; }
+.cal-cita-card {
+  background:var(--cream); border-radius:12px; padding:.8rem;
+  border-left:3px solid var(--rose-dark); display:flex; gap:.65rem; align-items:flex-start;
+}
+.cal-cita-hora { font-size:.84rem; font-weight:700; color:var(--plum-dark); min-width:40px; padding-top:2px; }
+.cal-cita-info { flex:1; }
+.cal-cita-cliente { font-size:.86rem; color:var(--text-dark); margin-bottom:.12rem; }
+.cal-cita-servicio { font-size:.76rem; color:var(--text-mid); margin-bottom:.12rem; }
+.cal-cita-est { font-size:.73rem; color:var(--text-soft); margin-bottom:.3rem; }
+.cal-cita-acciones { display:flex; flex-direction:column; gap:.25rem; align-items:flex-end; flex-shrink:0; }
+.cal-reasignar-label { font-size:.66rem; color:var(--text-soft); }
+.cal-sel-est {
+  font-size:.74rem; padding:.28rem .45rem; border:1px solid var(--rose-light);
+  border-radius:8px; background:var(--white); color:var(--text-dark);
+  cursor:pointer; max-width:130px;
+}
+.cal-sel-est:focus { outline:none; border-color:var(--plum-light); }
+@media(max-width:900px) { .cal-layout { grid-template-columns:1fr; } }

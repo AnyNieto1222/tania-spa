@@ -71,6 +71,7 @@ const state = {
   clientes:   [],
   registros:  [],
   personal:   [],
+  usuarios:   [],
   citas:      [],
   inventario: [],
   comisiones: [],
@@ -83,10 +84,11 @@ const state = {
 // ============================================================
 async function cargarState() {
   try {
-    const [clientes, registros, personal, citas, inventario, comisiones, historiasCorporales] = await Promise.all([
+    const [clientes, registros, personal, usuarios, citas, inventario, comisiones, historiasCorporales] = await Promise.all([
       fetch('/api/clientes').then(r => r.json()),
       fetch('/api/registros').then(r => r.json()),
       fetch('/api/personal').then(r => r.json()),
+      fetch('/api/usuarios').then(r => r.json()),
       fetch('/api/citas').then(r => r.json()),
       fetch('/api/inventario').then(r => r.json()),
       fetch('/api/comisiones').then(r => r.json()),
@@ -95,6 +97,7 @@ async function cargarState() {
     state.clientes   = clientes;
     state.registros  = registros;
     state.personal   = personal;
+    state.usuarios   = usuarios;
     state.citas      = citas;
     state.inventario = inventario;
     state.comisiones = comisiones;
@@ -212,6 +215,7 @@ function showTab(dash, tab, link) {
   if (dash === 'gerente' && tab === 'inventario') { renderEstadosInventario(); renderTablaInventario(); }
   if (dash === 'gerente' && tab === 'comisiones') { renderStatsComisiones(); renderTablaComisiones(); }
   if (dash === 'gerente' && tab === 'historia-corporal') renderTablaHistoriasCorporales();
+  if (tab === 'calendario') renderCalendario();
   if (dash === 'esteticista' && tab === 'mis-comisiones') renderMisComisiones();
   if (dash === 'esteticista' && tab === 'hc-corporal') renderTablaHCEsteticista();
   if (dash === 'esteticista' && tab === 'nuevo-registro') renderCitasHoyEsteticista();
@@ -552,6 +556,7 @@ async function eliminarPersonal(id) {
 
   if (miembro && miembro.email) {
     await fetch(`/api/usuarios/${encodeURIComponent(miembro.email)}`, { method: 'DELETE' });
+    state.usuarios = state.usuarios.filter(u => u.usuario !== miembro.email);
   }
 
   renderPersonalGrid();
@@ -561,7 +566,12 @@ async function eliminarPersonal(id) {
 }
 
 function obtenerPersonalAsignable() {
-  return state.personal.map(p => ({ nombre: p.nombre, cargo: p.cargo }));
+  const dePersonal = state.personal.map(p => ({ nombre: p.nombre, cargo: p.cargo }));
+  const nombresPersonal = new Set(dePersonal.map(p => p.nombre));
+  const deUsuarios = state.usuarios
+    .filter(u => u.nombre && !nombresPersonal.has(u.nombre))
+    .map(u => ({ nombre: u.nombre, cargo: u.rol || 'Esteticista' }));
+  return [...dePersonal, ...deUsuarios];
 }
 
 function renderSelectEsteticistas() {
@@ -635,6 +645,7 @@ async function agregarPersonal() {
   const hash = await sha256(password);
   const rol  = cargo === 'Gerente' ? 'gerente' : 'esteticista';
   await fetch('/api/usuarios', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ usuario, hash, rol, nombre }) });
+  state.usuarios.push({ usuario, rol, nombre });
 
   cerrarModal('modal-nuevo-personal');
   ['p-nombre','p-tel','p-usuario','p-password','p-confirm'].forEach(id => { document.getElementById(id).value = ''; });
@@ -1116,8 +1127,8 @@ function cargarEsteticista() {
 function actualizarStatsEsteticista() {
   if (!state.sesionActual) return;
   const miNombre = state.sesionActual.nombre;
-  const misClientes    = state.clientes.filter(c => c.esteticista === miNombre && c.activo !== 0 && c.activo !== '0').length;
-  const misTratamientos = state.registros.filter(r => r.esteticista === miNombre).length;
+  const misClientes    = state.clientes.filter(c => c.activo !== 0 && c.activo !== '0').length;
+  const misTratamientos = state.registros.length;
   const elStat = document.getElementById('est-stat-clientes');
   const trStat = document.getElementById('est-stat-tratamientos');
   if (elStat) elStat.textContent = misClientes;
@@ -1133,8 +1144,7 @@ function actualizarStatsEsteticista() {
 function renderResumenEstRecientes() {
   const cont = document.getElementById('est-resumen-recientes');
   if (!cont || !state.sesionActual) return;
-  const miNombre = state.sesionActual.nombre;
-  const ultimos  = state.registros.filter(r => r.esteticista === miNombre).reverse().slice(0, 5);
+  const ultimos  = [...state.registros].reverse().slice(0, 5);
   if (!ultimos.length) { cont.innerHTML = '<p class="empty-msg">Aún no hay registros.</p>'; return; }
   cont.innerHTML = ultimos.map(r => `
     <div class="reg-rec-item">
@@ -1156,14 +1166,12 @@ function poblarSelectClientes() {
 }
 
 function renderMisClientes(filtro = '') {
-  const cont     = document.getElementById('mis-clientes-cards');
-  const miNombre = state.sesionActual ? state.sesionActual.nombre : '';
-  const lista    = state.clientes.filter(c =>
-    c.esteticista === miNombre &&
+  const cont  = document.getElementById('mis-clientes-cards');
+  const lista = state.clientes.filter(c =>
     c.activo !== 0 && c.activo !== '0' &&
     c.nombre.toLowerCase().includes(filtro.toLowerCase())
   );
-  if (!lista.length) { cont.innerHTML = '<p class="empty-msg">Sin clientes asignados.</p>'; return; }
+  if (!lista.length) { cont.innerHTML = '<p class="empty-msg">Sin clientes registrados.</p>'; return; }
   cont.innerHTML = lista.map(c => `
     <div class="cliente-card">
       <div class="cc-top">
@@ -1254,9 +1262,8 @@ function renderCitasHoyEsteticista() {
   const cont = document.getElementById('citas-hoy-esteticista');
   if (!cont) return;
   const hoy      = new Date().toISOString().split('T')[0];
-  const miNombre = state.sesionActual ? state.sesionActual.nombre : '';
   const citasHoy = state.citas.filter(c =>
-    c.fecha === hoy && c.esteticista === miNombre && c.estado === 'programada'
+    c.fecha === hoy && c.estado === 'programada'
   );
   if (!citasHoy.length) { cont.innerHTML = ''; return; }
   cont.innerHTML = `
@@ -1276,9 +1283,8 @@ function renderCitasHoyEsteticista() {
 }
 
 function renderEstadosCitasEsteticista() {
-  const hoy    = new Date().toISOString().split('T')[0];
-  const nombre = state.sesionActual ? state.sesionActual.nombre : '';
-  const mis    = state.citas.filter(c => c.esteticista === nombre);
+  const hoy = new Date().toISOString().split('T')[0];
+  const mis = state.citas;
 
   document.getElementById('stat-est-citas-programadas').textContent = mis.filter(c => c.estado === 'programada').length;
   document.getElementById('stat-est-citas-completadas').textContent = mis.filter(c => c.estado === 'completada').length;
@@ -1287,15 +1293,13 @@ function renderEstadosCitasEsteticista() {
 }
 
 function renderTablaCitasEsteticista(filtro = '', estadoFiltro = '') {
-  const tbody  = document.getElementById('tbody-citas-est');
-  const nombre = state.sesionActual ? state.sesionActual.nombre : '';
+  const tbody = document.getElementById('tbody-citas-est');
   let lista = state.citas.filter(c => {
-    const esMia       = c.esteticista === nombre;
     const matchTexto  = !filtro ||
       c.clienteNombre.toLowerCase().includes(filtro.toLowerCase()) ||
       c.servicio.toLowerCase().includes(filtro.toLowerCase());
     const matchEstado = !estadoFiltro || c.estado === estadoFiltro;
-    return esMia && matchTexto && matchEstado;
+    return matchTexto && matchEstado;
   });
   lista = [...lista].sort((a, b) =>
     (a.fecha + 'T' + a.hora) < (b.fecha + 'T' + b.hora) ? 1 : -1
@@ -1456,9 +1460,8 @@ async function guardarRegistro() {
 }
 
 function renderMiHistorial() {
-  const tbody    = document.getElementById('tbody-mi-historial');
-  const miNombre = state.sesionActual ? state.sesionActual.nombre : '';
-  const misReg   = state.registros.filter(r => r.esteticista === miNombre);
+  const tbody  = document.getElementById('tbody-mi-historial');
+  const misReg = state.registros;
   tbody.innerHTML = misReg.length
     ? [...misReg].reverse().map(r => `
       <tr>
@@ -2487,6 +2490,8 @@ function renderMisComisiones() {
 let filasPlanConsultorio   = [];
 let filasPlanConsultorioFC = [];
 let hcEditandoId = null;
+let hcSaldoAnterior  = 0;
+let hcAbonosActuales = [];
 window.hcTipoActual = 'corporal';
 
 // ── poblar select de clientes para paso 0 ──────────────────────
@@ -2539,9 +2544,17 @@ async function hcContinuarPaso0() {
 
 function abrirModalHistoriaCorporal(id = null) {
   hcEditandoId = id;
+  hcSaldoAnterior  = 0;
+  hcAbonosActuales = [];
   filasPlanConsultorio   = [];
   filasPlanConsultorioFC = [];
   window.hcTipoActual    = 'corporal';
+
+  // Ocultar paneles de saldo anterior al abrir
+  const infoHC = document.getElementById('hc-info-saldo-ant');
+  const infoFC = document.getElementById('fc-info-saldo-ant');
+  if (infoHC) infoHC.style.display = 'none';
+  if (infoFC) infoFC.style.display = 'none';
 
   document.getElementById('modal-hc-titulo').textContent = id ? 'Editar Historia Clínica' : 'Nueva Historia Clínica';
   document.getElementById('hc-id').value = id || '';
@@ -2554,8 +2567,8 @@ function abrirModalHistoriaCorporal(id = null) {
     'hc-hora-despertar','hc-hora-dormir','hc-estado-general','hc-peso','hc-estatura',
     'hc-imc','hc-imc-ideal','hc-calorias','hc-edad-metabolica','hc-grasa-total',
     'hc-musculo-total','hc-grasa-visceral','med-espalda-alta','med-espalda-baja',
-    'med-supra-iliaco','med-adipo-total','med-abdomen-bajo','med-cadera','med-muslo-alto',
-    'med-muslo-medio','med-derrier','med-caida','med-volumen','med-total',
+    'med-supra-iliaco','med-adipo-total','med-abdomen-alto','med-cintura','med-abdomen-bajo',
+    'med-cadera','med-muslo-alto','med-muslo-medio','med-derrier','med-caida','med-volumen','med-total',
     'hc-cosme','hc-aliment','hc-activ-casa','hc-otros-casa','hc-trat-desc','hc-num-sesiones',
     'hc-valor-total','hc-abono-nuevo','hc-saldo','hc-observaciones','hc-firma-prof','hc-firma-pac',
     'hc-nuevo-nombre','hc-nuevo-tel','hc-nuevo-email','hc-nuevo-alergias',
@@ -2590,7 +2603,7 @@ function abrirModalHistoriaCorporal(id = null) {
 
     const set = (elId, val) => { const e = document.getElementById(elId); if (e && val !== undefined && val !== null) e.value = val; };
     set('hc-nombre', h.nombre); set('hc-cedula', h.cedula);
-    set('hc-fecha-nac', h.fechaNacimiento); set('hc-edad', h.edad);
+    set('hc-fecha-nac', h.fechaNacimiento); calcularEdadHC();
     set('hc-genero', h.genero); set('hc-estado-civil', h.estadoCivil);
     set('hc-eps', h.eps); set('hc-rh', h.rh); set('hc-celular', h.celular);
     set('hc-direccion', h.direccion); set('hc-ocupacion', h.ocupacion); set('hc-email', h.email);
@@ -2641,6 +2654,20 @@ function abrirModalHistoriaCorporal(id = null) {
       set('fc-num-sesiones', h.numSesiones); set('fc-valor-total', h.valorTotal);
       set('fc-saldo', formatCOP(h.saldoPendiente));
       set('fc-firma-prof', h.firmaProfesional); set('fc-firma-pac', h.firmaPaciente);
+    }
+
+    // Cargar saldo y abonos anteriores para el modo de continuidad
+    hcSaldoAnterior  = h.saldoPendiente || 0;
+    hcAbonosActuales = Array.isArray(h.abonos) ? h.abonos : [];
+    if (hcSaldoAnterior > 0) {
+      ['hc','fc'].forEach(pref => {
+        const info = document.getElementById(`${pref}-info-saldo-ant`);
+        const disp = document.getElementById(`${pref}-saldo-ant-display`);
+        const lbl  = document.getElementById(`lbl-${pref}-abono`);
+        if (info) info.style.display = '';
+        if (disp) disp.value = formatCOP(hcSaldoAnterior);
+        if (lbl)  lbl.textContent = 'Abono de esta sesión ($)';
+      });
     }
 
     // Al editar: saltar paso 0
@@ -2738,20 +2765,30 @@ function calcularIMC() {
 }
 
 function calcularSaldoHC() {
-  const total  = parseFloat(document.getElementById('hc-valor-total').value) || 0;
-  const abono  = parseFloat(document.getElementById('hc-abono-nuevo').value) || 0;
-  const saldo  = Math.max(0, total - abono);
+  const abono = parseFloat(document.getElementById('hc-abono-nuevo').value) || 0;
+  let saldo;
+  if (hcEditandoId && hcSaldoAnterior > 0) {
+    saldo = Math.max(0, hcSaldoAnterior - abono);
+  } else {
+    const total = parseFloat(document.getElementById('hc-valor-total').value) || 0;
+    saldo = Math.max(0, total - abono);
+  }
   document.getElementById('hc-saldo').value = formatCOP(saldo);
 }
 
 function calcularSaldoFC() {
-  const el1 = document.getElementById('fc-valor-total');
   const el2 = document.getElementById('fc-abono-nuevo');
   const el3 = document.getElementById('fc-saldo');
-  if (!el1 || !el2 || !el3) return;
-  const total = parseFloat(el1.value) || 0;
+  if (!el2 || !el3) return;
   const abono = parseFloat(el2.value) || 0;
-  el3.value = formatCOP(Math.max(0, total - abono));
+  let saldo;
+  if (hcEditandoId && hcSaldoAnterior > 0) {
+    saldo = Math.max(0, hcSaldoAnterior - abono);
+  } else {
+    const total = parseFloat(document.getElementById('fc-valor-total')?.value) || 0;
+    saldo = Math.max(0, total - abono);
+  }
+  el3.value = formatCOP(saldo);
 }
 
 function addFilaPlanConsultorio() {
@@ -2864,7 +2901,9 @@ async function guardarHistoriaCorporal() {
   if (tipo === 'corporal') {
     valorTotal = parseFloat(document.getElementById('hc-valor-total').value) || 0;
     abono      = parseFloat(document.getElementById('hc-abono-nuevo').value) || 0;
-    saldoPendiente = Math.max(0, valorTotal - abono);
+    saldoPendiente = hcEditandoId && hcSaldoAnterior > 0
+      ? Math.max(0, hcSaldoAnterior - abono)
+      : Math.max(0, valorTotal - abono);
     numSesiones = parseInt(document.getElementById('hc-num-sesiones').value) || 0;
     planConsultorio = filasPlanConsultorio;
     tratamientoDescripcion = document.getElementById('hc-trat-desc').value;
@@ -2895,14 +2934,16 @@ async function guardarHistoriaCorporal() {
       grasaVisceral: document.getElementById('hc-grasa-visceral').value,
     };
     mediciones = {
-      'espalda-alta': document.getElementById('med-espalda-alta').value,
-      'espalda-baja': document.getElementById('med-espalda-baja').value,
-      'supra-iliaco': document.getElementById('med-supra-iliaco').value,
-      'adipo-total':  document.getElementById('med-adipo-total').value,
-      'abdomen-bajo': document.getElementById('med-abdomen-bajo').value,
-      cadera:         document.getElementById('med-cadera').value,
-      'muslo-alto':   document.getElementById('med-muslo-alto').value,
-      'muslo-medio':  document.getElementById('med-muslo-medio').value,
+      'espalda-alta':   document.getElementById('med-espalda-alta').value,
+      'espalda-baja':   document.getElementById('med-espalda-baja').value,
+      'supra-iliaco':   document.getElementById('med-supra-iliaco').value,
+      'adipo-total':    document.getElementById('med-adipo-total').value,
+      'abdomen-alto':   document.getElementById('med-abdomen-alto').value,
+      cintura:          document.getElementById('med-cintura').value,
+      'abdomen-bajo':   document.getElementById('med-abdomen-bajo').value,
+      cadera:           document.getElementById('med-cadera').value,
+      'muslo-alto':     document.getElementById('med-muslo-alto').value,
+      'muslo-medio':    document.getElementById('med-muslo-medio').value,
       derrier: document.getElementById('med-derrier').value,
       caida:   document.getElementById('med-caida').value,
       volumen: document.getElementById('med-volumen').value,
@@ -2918,7 +2959,9 @@ async function guardarHistoriaCorporal() {
     // Facial
     valorTotal = parseFloat(document.getElementById('fc-valor-total').value) || 0;
     abono      = parseFloat(document.getElementById('fc-abono-nuevo').value) || 0;
-    saldoPendiente = Math.max(0, valorTotal - abono);
+    saldoPendiente = hcEditandoId && hcSaldoAnterior > 0
+      ? Math.max(0, hcSaldoAnterior - abono)
+      : Math.max(0, valorTotal - abono);
     numSesiones = parseInt(document.getElementById('fc-num-sesiones').value) || 0;
     planConsultorio = filasPlanConsultorioFC;
     observaciones    = document.getElementById('fc-observaciones').value;
@@ -2950,7 +2993,10 @@ async function guardarHistoriaCorporal() {
     tratamientoDescripcion,
     numSesiones,
     valorTotal,
-    abonos: abono > 0 && !hcEditandoId ? [{ monto: abono, fecha: new Date().toISOString().slice(0, 10) }] : [],
+    abonos: (() => {
+      const nuevo = abono > 0 ? [{ monto: abono, fecha: new Date().toISOString().slice(0, 10) }] : [];
+      return hcEditandoId ? [...hcAbonosActuales, ...nuevo] : nuevo;
+    })(),
     saldoPendiente,
     observaciones,
     firmaProfesional,
@@ -3022,8 +3068,7 @@ function filtrarHistoriasCorporales(v) {
 function renderTablaHCEsteticista(filtro = '') {
   const tbody = document.getElementById('tbody-hc-corporal-est');
   if (!tbody || !state.sesionActual) return;
-  const nombre = state.sesionActual.nombre;
-  let lista = state.historiasCorporales.filter(h => h.esteticista === nombre);
+  let lista = state.historiasCorporales;
   if (filtro) lista = lista.filter(h => h.nombre.toLowerCase().includes(filtro.toLowerCase()) || h.cedula.includes(filtro));
   tbody.innerHTML = lista.length ? [...lista].reverse().map(h => `
     <tr>
@@ -3112,4 +3157,116 @@ async function eliminarHistoriaCorporal(id) {
   state.historiasCorporales = state.historiasCorporales.filter(x => x.id !== id);
   renderTablaHistoriasCorporales();
   showToast('Historia clínica eliminada');
+}
+// ============================================================
+//  CALENDARIO
+// ============================================================
+let calAnio = new Date().getFullYear();
+let calMes  = new Date().getMonth();
+let calDiaActivo = null;
+const CAL_MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function calNavMes(delta) {
+  calMes += delta;
+  if (calMes > 11) { calMes = 0; calAnio++; }
+  if (calMes < 0)  { calMes = 11; calAnio--; }
+  renderCalendario();
+}
+
+function renderCalendario() {
+  const hoy       = new Date();
+  const primerDia = new Date(calAnio, calMes, 1);
+  const ultimoDia = new Date(calAnio, calMes + 1, 0);
+  const startDay  = primerDia.getDay();
+  const mesAnt    = new Date(calAnio, calMes, 0);
+
+  ['g', 'e'].forEach(pref => {
+    const grid   = document.getElementById(`cal-${pref}-grid`);
+    const titulo = document.getElementById(`cal-${pref}-titulo`);
+    if (!grid) return;
+    titulo.textContent = `${CAL_MESES[calMes]} ${calAnio}`;
+
+    let html = '';
+    for (let i = startDay - 1; i >= 0; i--)
+      html += `<div class="cal-dia otro-mes"><span class="cal-dia-num">${mesAnt.getDate() - i}</span></div>`;
+
+    for (let d = 1; d <= ultimoDia.getDate(); d++) {
+      const fechaStr = `${calAnio}-${String(calMes + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const total    = state.citas.filter(c => c.fecha === fechaStr).length;
+      const esHoy    = hoy.getFullYear() === calAnio && hoy.getMonth() === calMes && hoy.getDate() === d;
+      const selec    = calDiaActivo === fechaStr ? ' seleccionado' : '';
+      const badge    = total > 0 ? `<span class="cal-badge">${total}</span>` : '';
+      html += `<div class="cal-dia${esHoy ? ' hoy' : ''}${selec}" onclick="calSeleccionarDia('${fechaStr}')">
+        <span class="cal-dia-num">${d}</span>${badge}
+      </div>`;
+    }
+
+    const resto = (startDay + ultimoDia.getDate()) % 7;
+    if (resto) for (let i = 1; i <= 7 - resto; i++)
+      html += `<div class="cal-dia otro-mes"><span class="cal-dia-num">${i}</span></div>`;
+
+    grid.innerHTML = html;
+  });
+
+  if (calDiaActivo) calSeleccionarDia(calDiaActivo);
+}
+
+function calSeleccionarDia(fechaStr) {
+  calDiaActivo = fechaStr;
+
+  // Resaltar dia en ambas grillas
+  document.querySelectorAll('.cal-dia.seleccionado').forEach(el => el.classList.remove('seleccionado'));
+  document.querySelectorAll('.cal-dia').forEach(el => {
+    if (el.getAttribute('onclick') === `calSeleccionarDia('${fechaStr}')`) el.classList.add('seleccionado');
+  });
+
+  const citas = [...state.citas.filter(c => c.fecha === fechaStr)].sort((a, b) => (a.hora > b.hora ? 1 : -1));
+  const [y, m, d] = fechaStr.split('-').map(Number);
+  const tituloFecha = new Date(y, m - 1, d).toLocaleDateString('es-CO', { weekday:'long', day:'numeric', month:'long' });
+  const personal = obtenerPersonalAsignable();
+
+  const estadoBadge = { programada:'badge-programada', completada:'badge-completada', cancelada:'badge-cancelada' };
+  const citasHtml = citas.length === 0
+    ? '<p class="cal-sin-citas">No hay citas para este día.</p>'
+    : citas.map(c => {
+        const opts = personal.map(p =>
+          `<option value="${p.nombre}" ${p.nombre === c.esteticista ? 'selected' : ''}>${p.nombre}</option>`
+        ).join('');
+        return `<div class="cal-cita-card">
+          <div class="cal-cita-hora">${c.hora || '—'}</div>
+          <div class="cal-cita-info">
+            <p class="cal-cita-cliente"><strong>${c.clienteNombre}</strong></p>
+            <p class="cal-cita-servicio">${c.servicio}</p>
+            <p class="cal-cita-est">Esteticista: ${c.esteticista || '—'}</p>
+            <span class="${estadoBadge[c.estado] || ''}">${c.estado || ''}</span>
+          </div>
+          <div class="cal-cita-acciones">
+            <span class="cal-reasignar-label">Reasignar a:</span>
+            <select class="cal-sel-est" onchange="calReasignarCita(${c.id}, this.value)">${opts}</select>
+          </div>
+        </div>`;
+      }).join('');
+
+  const html = `<div class="cal-detalle-titulo">${tituloFecha}</div>
+    <div class="cal-detalle-count">${citas.length} cita${citas.length !== 1 ? 's' : ''}</div>
+    <div class="cal-citas-lista">${citasHtml}</div>`;
+
+  ['g', 'e'].forEach(pref => {
+    const panel = document.getElementById(`cal-${pref}-detalle`);
+    if (panel) panel.innerHTML = html;
+  });
+}
+
+async function calReasignarCita(citaId, nuevoEsteticista) {
+  const idx = state.citas.findIndex(c => c.id === citaId);
+  if (idx < 0) return;
+  const cita = { ...state.citas[idx], esteticista: nuevoEsteticista };
+  await fetch(`/api/citas/${citaId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(cita),
+  });
+  state.citas[idx] = cita;
+  renderCalendario();
+  showToast(`✦ Cita reasignada a ${nuevoEsteticista}`);
 }
